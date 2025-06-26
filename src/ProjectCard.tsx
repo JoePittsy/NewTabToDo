@@ -76,11 +76,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   function handleEdit() {
     dialog.openDialog(
       <EditProjectDialog
-      title="Edit Project"
+        title="Edit Project"
         name={proj.name}
         logo={proj.logo}
-        onSave={(name, logo) => {
-          setProj(p => ({ ...p, name, logo }));
+        links={proj.quickLinks}
+        onSave={(name, logo, links) => {
+          if (name === '__DELETE__') {
+            // Remove from localStorage and update parent
+            localStorage.removeItem(`project-${proj.name}`);
+            window.location.reload(); // Or trigger parent state update
+            return;
+          }
+          setProj(p => ({ ...p, name, logo, quickLinks: links }));
+          localStorage.setItem(`project-${name}`, JSON.stringify({ ...proj, name, logo, quickLinks: links }));
           dialog.closeDialog();
         }}
         onCancel={dialog.closeDialog}

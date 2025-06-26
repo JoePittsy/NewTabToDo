@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
@@ -6,6 +6,7 @@ import ProjectCard, { QuickLink } from './ProjectCard';
 import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './EditProjectDialog';
+import CommandPalette from './CommandPalette';
 
 function loadProjectFromStorage(defaultProject: any) {
     const key = `project-${defaultProject.name}`;
@@ -35,6 +36,19 @@ function loadAllProjectsFromStorage() {
 function App() {
     const [projects, setProjects] = useState(() => loadAllProjectsFromStorage());
     const dialog = useDialog();
+    const [commandOpen, setCommandOpen] = useState(false);
+
+    useEffect(() => {
+        function onKeyDown(e: KeyboardEvent) {
+            // Ctrl+K or Cmd+K
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setCommandOpen(true);
+            }
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, []);
 
     function handleCreateProject() {
         dialog.openDialog(
@@ -42,12 +56,13 @@ function App() {
                 title ="Create New Project"
                 name="New Project"
                 logo=""
-                onSave={(name, logo) => {
+                links={[]}
+                onSave={(name, logo, links) => {
                     const newProject = {
                         name,
                         logo: logo || '',
                         todos: [],
-                        quickLinks: [],
+                        quickLinks: links || [],
                     };
                     localStorage.setItem(`project-${name}`, JSON.stringify(newProject));
                     setProjects(prev => [...prev, newProject]);
@@ -60,6 +75,7 @@ function App() {
 
     return (
         <>
+            <CommandPalette open={commandOpen} setOpen={setCommandOpen} />
             <main style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em',  }}>
                 {projects.map((project, idx) => (
                     <ProjectCard key={project.name} project={project} />
