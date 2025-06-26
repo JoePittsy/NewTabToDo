@@ -19,37 +19,27 @@ export interface ToDoItem {
   completed: boolean;
   completedAt?: number;
   order?: number;
+  createdOn?: number;
 }
 
 interface ToDoListProps {
   todos: ToDoItem[];
-  projectName?: string;
+  setTodos: (todos: ToDoItem[]) => void;
 }
 
-const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName }) => {
-  // Try to load from localStorage if projectName is provided
-  const storageKey = projectName ? `todos-${projectName}` : undefined;
-  const [todos, setTodos] = React.useState<ToDoItem[]>(() => {
-    if (storageKey) {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch {}
-      }
-    }
-    return initialTodos;
-  });
+const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   const [newTodo, setNewTodo] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
   const [now, setNow] = useState(Date.now());
 
   // On mount, assign order to todos if not present
   React.useEffect(() => {
-    setTodos(todos => {
-      let order = 0;
-      return todos.map(t => t.order === undefined ? { ...t, order: order++ } : t);
-    });
+    let order = 0;
+    const withOrder = todos.map((t: ToDoItem) => t.order === undefined ? { ...t, order: order++ } : t);
+    if (withOrder.some((t, i) => t.order !== todos[i]?.order)) {
+      setTodos(withOrder);
+    }
+    // eslint-disable-next-line
   }, []);
 
   React.useEffect(() => {
@@ -61,10 +51,10 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName })
     e.preventDefault();
     if (newTodo.trim()) {
       // Find the max order among incomplete todos, or 0 if none
-      const maxOrder = todos.filter(t => !t.completed).reduce((max, t) => t.order !== undefined && t.order > max ? t.order : max, -1);
+      const maxOrder = todos.filter((t: ToDoItem) => !t.completed).reduce((max: number, t: ToDoItem) => t.order !== undefined && t.order > max ? t.order : max, -1);
       setTodos([
         ...todos,
-        { text: newTodo, completed: false, order: maxOrder + 1 }
+        { text: newTodo, completed: false, order: maxOrder + 1, createdOn: Date.now() }
       ]);
       setNewTodo('');
     }
@@ -73,35 +63,29 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName })
   const handleToggle = (idx: number) => {
     // Instantly toggle completion
     if (!todos[idx].completed) {
-      setTodos(todos => {
-        const updated = todos.map((todo, i) =>
-          i === idx ? { ...todo, completed: true, completedAt: Date.now() } : todo
-        );
-        // Sort: incomplete first, then completed by completedAt descending (newest first)
-        return [
-          ...updated.filter(t => !t.completed),
-          ...updated.filter(t => t.completed).sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-        ];
-      });
+      const updated = todos.map((todo: ToDoItem, i: number) =>
+        i === idx ? { ...todo, completed: true, completedAt: Date.now() } : todo
+      );
+      setTodos([
+        ...updated.filter((t: ToDoItem) => !t.completed),
+        ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      ]);
     } else {
-      // If marking as incomplete, update immediately
-      setTodos(todos => {
-        const updated = todos.map((todo, i) =>
-          i === idx ? { ...todo, completed: false, completedAt: undefined } : todo
-        );
-        return [
-          ...updated.filter(t => !t.completed),
-          ...updated.filter(t => t.completed).sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-        ];
-      });
+      const updated = todos.map((todo: ToDoItem, i: number) =>
+        i === idx ? { ...todo, completed: false, completedAt: undefined } : todo
+      );
+      setTodos([
+        ...updated.filter((t: ToDoItem) => !t.completed),
+        ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      ]);
     }
   };
 
   // For incomplete, sort by order ascending
-  const incomplete = todos.filter(t => !t.completed).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const completed = todos.filter(t => t.completed).sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
+  const incomplete = todos.filter((t: ToDoItem) => !t.completed).sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
+  const completed = todos.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
   // Use unique IDs for dnd-kit, not array indexes
-  const incompleteIds = incomplete.map((todo) => {
+  const incompleteIds = incomplete.map((todo: ToDoItem) => {
     // Use a stable unique id for each todo, e.g. based on text + order
     return `${todo.text}__${todo.order ?? 0}`;
   });
@@ -134,27 +118,18 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName })
     const { active, over } = event;
     if (!over) return;
     if (active.id !== over.id) {
-      setTodos(todos => {
-        const incompleteTodos = todos.filter(t => !t.completed).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        // Use the same id generation as above for correct mapping
-        const ids = incompleteTodos.map(todo => `${todo.text}__${todo.order ?? 0}`);
-        const oldIndex = ids.findIndex(id => id === active.id);
-        const newIndex = ids.findIndex(id => id === over.id);
-        if (oldIndex === -1 || newIndex === -1) return todos;
-        const newIncomplete = arrayMove(incompleteTodos, oldIndex, newIndex);
-        newIncomplete.forEach((t, i) => t.order = i);
-        const completedTodos = todos.filter(t => t.completed);
-        return [...newIncomplete, ...completedTodos];
-      });
+      const incompleteTodos = todos.filter((t: ToDoItem) => !t.completed).sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
+      // Use the same id generation as above for correct mapping
+      const ids = incompleteTodos.map((todo: ToDoItem) => `${todo.text}__${todo.order ?? 0}`);
+      const oldIndex = ids.findIndex((id: string) => id === active.id);
+      const newIndex = ids.findIndex((id: string) => id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+      const newIncomplete = arrayMove(incompleteTodos, oldIndex, newIndex);
+      newIncomplete.forEach((t: ToDoItem, i: number) => (t.order = i));
+      const completedTodos = todos.filter((t: ToDoItem) => t.completed);
+      setTodos([...newIncomplete, ...completedTodos]);
     }
   }
-
-  // Save todos to localStorage on change
-  React.useEffect(() => {
-    if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(todos));
-    }
-  }, [todos, storageKey]);
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden'}}>
@@ -174,7 +149,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName })
           <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0 }}>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
-                {incomplete.map((todo, idx) => (
+                {incomplete.map((todo: ToDoItem, idx: number) => (
                   <SortableItem
                     key={incompleteIds[idx]}
                     id={incompleteIds[idx]}
@@ -232,7 +207,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos: initialTodos, projectName })
           </button>
           {showCompleted && (
             <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 0.7, margin: 0, padding: 0 }}>
-              {completed.map((todo, idx) => (
+              {completed.map((todo: ToDoItem, idx: number) => (
                 <li
                   key={idx}
                   onClick={() => handleToggle(todos.indexOf(todo))}

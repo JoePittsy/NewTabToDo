@@ -7,34 +7,23 @@ import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './EditProjectDialog';
 import CommandPalette from './CommandPalette';
-
-function loadProjectFromStorage(defaultProject: any) {
-    const key = `project-${defaultProject.name}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch {}
-    }
-    return defaultProject;
-}
-
-function loadAllProjectsFromStorage() {
-    const projects: any[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('project-')) {
-            try {
-                const proj = JSON.parse(localStorage.getItem(key)!);
-                projects.push(proj);
-            } catch {}
-        }
-    }
-    return projects;
-}
+import { ProjectsProvider, useProjects } from './ProjectsProvider';
+import {
+    DndContext as ProjectDndContext,
+    closestCenter as projectClosestCenter,
+    PointerSensor as ProjectPointerSensor,
+    useSensor as useProjectSensor,
+    useSensors as useProjectSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove as projectArrayMove,
+    SortableContext as ProjectSortableContext,
+    useSortable as useProjectSortable,
+    verticalListSortingStrategy as projectVerticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 function App() {
-    const [projects, setProjects] = useState(() => loadAllProjectsFromStorage());
+    const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
     const dialog = useDialog();
     const [commandOpen, setCommandOpen] = useState(false);
 
@@ -47,14 +36,40 @@ function App() {
             }
         }
         window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
+        // Horizontal scroll on wheel for main container
+        const main = document.getElementsByTagName('html')[0];
+        function onWheel(e: WheelEvent) {
+            if (!main) return;
+            if (e.deltaY > 0) main.scrollLeft += 100;
+            else main.scrollLeft -= 100;
+        }
+        if (main) main.addEventListener('wheel', onWheel);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            if (main) main.removeEventListener('wheel', onWheel);
+        };
     }, []);
 
-    function handleCreateProject() {
+    useEffect(() => {
+        // On mount, open 5 projects with most recent to-dos if none are open
+        if (openedProjects.length === 0 && projects.length > 0) {
+            // Sort projects by most recent to-do createdOn
+            const sorted = [...projects].sort((a, b) => {
+                const aLatest = Math.max(...(a.todos?.map(t => t.createdOn || 0) ?? [0]));
+                const bLatest = Math.max(...(b.todos?.map(t => t.createdOn || 0) ?? [0]));
+                return bLatest - aLatest;
+            });
+            const top5 = sorted.slice(0, 5).map(p => p.name);
+            if (top5.length > 0) setOpenedProjects(top5);
+        }
+    // Only run when projects change or openedProjects change
+    }, [projects]);
+
+    function handleCreateProject(initialName?: string) {
         dialog.openDialog(
             <EditProjectDialog
-                title ="Create New Project"
-                name="New Project"
+                title="Create New Project"
+                name={initialName || ''}
                 logo=""
                 links={[]}
                 onSave={(name, logo, links) => {
@@ -64,8 +79,8 @@ function App() {
                         todos: [],
                         quickLinks: links || [],
                     };
-                    localStorage.setItem(`project-${name}`, JSON.stringify(newProject));
-                    setProjects(prev => [...prev, newProject]);
+                    addProject(newProject);
+                    openProject(name); // Open the new project automatically
                     dialog.closeDialog();
                 }}
                 onCancel={dialog.closeDialog}
@@ -73,17 +88,47 @@ function App() {
         );
     }
 
+    function handlePaletteChange(item: any) {
+        if (item && item.query) {
+            setCommandOpen(false);
+            setTimeout(() => handleCreateProject(item.query), 0);
+        } else if (item && item.url) {
+            window.location = item.url;
+        }
+    }
+
+    // DnD for open projects
+    const sensors = useProjectSensors(useProjectSensor(ProjectPointerSensor));
+    const openProjectObjs = openedProjects
+        .map(name => projects.find(p => p.name === name))
+        .filter((p): p is NonNullable<typeof p> => Boolean(p));
+    function handleDragEnd(event: any) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIndex = openedProjects.indexOf(active.id);
+        const newIndex = openedProjects.indexOf(over.id);
+        if (oldIndex === -1 || newIndex === -1) return;
+        setOpenedProjects(projectArrayMove(openedProjects, oldIndex, newIndex));
+    }
+
     return (
         <>
-            <CommandPalette open={commandOpen} setOpen={setCommandOpen} />
-            <main style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em',  }}>
-                {projects.map((project, idx) => (
-                    <ProjectCard key={project.name} project={project} />
-                ))}
+            <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
+            <main
+                id="MAIN"
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em', overflowX: 'auto' }}
+            >
+                <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd}>
+                    <ProjectSortableContext items={openedProjects} strategy={projectVerticalListSortingStrategy}>
+                        {openProjectObjs.map((project, idx) => (
+                            <SortableProjectCard key={project.name} id={project.name} project={project} />
+                        ))}
+                    </ProjectSortableContext>
+                </ProjectDndContext>
             </main>
             {/* FAB for new project */}
             <button
-                onClick={handleCreateProject}
+                onClick={() => handleCreateProject()}
                 aria-label="Create new project"
                 style={{
                     position: 'fixed',
@@ -109,17 +154,39 @@ function App() {
                     lineHeight: 1,
                 }}
             >
-                <span style={{display: 'block', width: '100%', textAlign: 'center', lineHeight: 0, marginBottom: '0.5rem',  fontSize: '1em', fontWeight: 700}}>+</span>
+                <span style={{ display: 'block', width: '100%', textAlign: 'center', lineHeight: 0, marginBottom: '0.5rem', fontSize: '1em', fontWeight: 700 }}>+</span>
             </button>
         </>
     );
 }
 
-// Wrap App in DialogProvider
-const AppWithDialogProvider = () => (
-  <DialogProvider>
-    <App />
-  </DialogProvider>
+// Sortable wrapper for ProjectCard
+function SortableProjectCard({ id, project }: { id: string, project: any }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useProjectSortable({ id });
+    // Only use drag handle on a dedicated element, not the whole card
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined,
+                transition,
+                opacity: isDragging ? 0.5 : 1,
+                zIndex: isDragging ? 1000 : undefined,
+            }}
+            {...attributes}
+        >
+            <ProjectCard project={project} dragHandleProps={listeners} />
+        </div>
+    );
+}
+
+// Wrap App in DialogProvider and ProjectsProvider
+const AppWithProviders = () => (
+    <DialogProvider>
+        <ProjectsProvider>
+            <App />
+        </ProjectsProvider>
+    </DialogProvider>
 );
 
-export default AppWithDialogProvider;
+export default AppWithProviders;

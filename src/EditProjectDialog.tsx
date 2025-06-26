@@ -180,6 +180,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
       <label style={{ fontWeight: 500 }}>
         Name
         <input
+          autoFocus
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
