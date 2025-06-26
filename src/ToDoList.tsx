@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import {
   DndContext,
   closestCenter,
@@ -31,6 +32,9 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   const [newTodo, setNewTodo] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [dragging, setDragging] = useState(false);
+  const [confirmIdx, setConfirmIdx] = useState<number|null>(null);
+  const [pendingMoveIdx, setPendingMoveIdx] = useState<number|null>(null);
 
   // On mount, assign order to todos if not present
   React.useEffect(() => {
@@ -61,16 +65,22 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   };
 
   const handleToggle = (idx: number) => {
-    // Instantly toggle completion
     if (!todos[idx].completed) {
+      // Mark as completed visually (strike-through), but don't move yet
       const updated = todos.map((todo: ToDoItem, i: number) =>
         i === idx ? { ...todo, completed: true, completedAt: Date.now() } : todo
       );
-      setTodos([
-        ...updated.filter((t: ToDoItem) => !t.completed),
-        ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-      ]);
+      setTodos(updated);
+      setPendingMoveIdx(idx);
+      setTimeout(() => {
+        setTodos([
+          ...updated.filter((t: ToDoItem) => !t.completed),
+          ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+        ]);
+        setPendingMoveIdx(null);
+      }, 250);
     } else {
+      // Instantly mark as incomplete and move
       const updated = todos.map((todo: ToDoItem, i: number) =>
         i === idx ? { ...todo, completed: false, completedAt: undefined } : todo
       );
@@ -82,10 +92,16 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   };
 
   // For incomplete, sort by order ascending
-  const incomplete = todos.filter((t: ToDoItem) => !t.completed).sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
-  const completed = todos.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
+  const incomplete = todos
+    .map((t: ToDoItem, i: number) => ({ ...t, _idx: i }))
+    .filter((t: any) => !t.completed || pendingMoveIdx === t._idx)
+    .sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
+  const completed = todos
+    .map((t: ToDoItem, i: number) => ({ ...t, _idx: i }))
+    .filter((t: any) => t.completed && pendingMoveIdx !== t._idx)
+    .sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
   // Use unique IDs for dnd-kit, not array indexes
-  const incompleteIds = incomplete.map((todo: ToDoItem) => {
+  const incompleteIds = incomplete.map((todo: any) => {
     // Use a stable unique id for each todo, e.g. based on text + order
     return `${todo.text}__${todo.order ?? 0}`;
   });
@@ -114,7 +130,13 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
+  function handleDragStart(event: any) {
+    setDragging(true);
+
+  }
+
   function handleDragEnd(event: any) {
+    setDragging(false);
     const { active, over } = event;
     if (!over) return;
     if (active.id !== over.id) {
@@ -129,6 +151,59 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
       const completedTodos = todos.filter((t: ToDoItem) => t.completed);
       setTodos([...newIncomplete, ...completedTodos]);
     }
+  }
+
+  // Remove to-do without completing
+  function handleDeleteTodo(idx: number) {
+    setTodos([...todos.filter((_, i) => i !== idx)]);
+  }
+
+  // InfoLine component for active to-dos
+  function InfoLine({ createdOn, onDelete, showConfirm, setShowConfirm }: { createdOn?: number, onDelete: () => void, showConfirm: boolean, setShowConfirm: (v: boolean) => void }) {
+    const [nowInfo, setNowInfo] = useState(Date.now());
+    React.useEffect(() => {
+      const interval = setInterval(() => setNowInfo(Date.now()), 1000);
+      return () => clearInterval(interval);
+    }, []);
+    let timeOpen = '';
+    if (createdOn) {
+      const diff = nowInfo - createdOn;
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      if (hours > 0) timeOpen = `${hours}h ${minutes % 60}m`;
+      else if (minutes > 0) timeOpen = `${minutes}m ${seconds % 60}s`;
+      else timeOpen = `${seconds}s`;
+    }
+    return (
+      <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75em', color: '#8ec6ff', padding: '0.1em 0.5em 0.3em 0em', minHeight: 22 }}>
+          <span>{timeOpen}</span>
+          <span
+            style={{ cursor: 'pointer', color: '#e57373', fontWeight: 700, fontSize: '1.1em', marginLeft: 8 }}
+            title="Remove to-do"
+            onClick={e => { e.stopPropagation(); setShowConfirm(true); }}
+          >
+            ×
+          </span>
+        </div>
+        {showConfirm && ReactDOM.createPortal(
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.45)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ background: '#23272f', borderRadius: 12, boxShadow: '0 8px 32px #000a', padding: '2em 2em 1.5em', minWidth: 320, textAlign: 'center', border: '2px solid #e57373' }}>
+              <div style={{ color: '#e57373', fontWeight: 700, fontSize: '1.1em', marginBottom: 16 }}>Remove this to-do without completing it?</div>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                <button onClick={() => { setShowConfirm(false); onDelete(); }} style={{ background: '#e57373', color: '#fff', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Remove</button>
+                <button onClick={() => setShowConfirm(false)} style={{ background: 'none', color: '#8ec6ff', border: '1.5px solid #8ec6ff', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Cancel</button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      </>
+    );
   }
 
   return (
@@ -147,20 +222,29 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
         {/* Incomplete (to-do) list: 66% */}
         <div style={{flex: 2, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
           <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0 }}>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
               <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
-                {incomplete.map((todo: ToDoItem, idx: number) => (
-                  <SortableItem
-                    key={incompleteIds[idx]}
-                    id={incompleteIds[idx]}
-                    className={todo.completed ? 'completed' : ''}
-                    isCompleted={todo.completed}
-                    onToggle={() => handleToggle(todos.indexOf(todo))}
-                    style={{ userSelect: 'none' }}
-                    title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                  >
-                    {todo.text}
-                  </SortableItem>
+                {incomplete.map((todo: any, idx: number) => (
+                  <React.Fragment key={incompleteIds[idx]}>
+                    <SortableItem
+                      id={incompleteIds[idx]}
+                      className={todo.completed ? 'completed' : ''}
+                      isCompleted={todo.completed}
+                      onTextClick={() => {
+                        if (confirmIdx !== idx) handleToggle(todo._idx);
+                      }}
+                      style={{ userSelect: 'none' }}
+                      title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
+                    >
+                      {todo.text}
+                      <InfoLine
+                        createdOn={todo.createdOn}
+                        onDelete={() => handleDeleteTodo(todo._idx)}
+                        showConfirm={confirmIdx === idx}
+                        setShowConfirm={v => setConfirmIdx(v ? idx : null)}
+                      />
+                    </SortableItem>
+                  </React.Fragment>
                 ))}
               </SortableContext>
             </DndContext>
@@ -207,10 +291,10 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           </button>
           {showCompleted && (
             <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 0.7, margin: 0, padding: 0 }}>
-              {completed.map((todo: ToDoItem, idx: number) => (
+              {completed.map((todo: any, idx: number) => (
                 <li
                   key={idx}
-                  onClick={() => handleToggle(todos.indexOf(todo))}
+                  onClick={() => handleToggle(todo._idx)}
                   style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                 >
@@ -243,7 +327,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
 };
 
 // Update SortableItem to accept drag handle props
-function SortableItem({ id, children, className, style, onToggle, isCompleted, ...props }: any) {
+function SortableItem({ id, children, className, style, isCompleted, ...props }: any) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
     <li
@@ -281,7 +365,7 @@ function SortableItem({ id, children, className, style, onToggle, isCompleted, .
       </span>
       {/* To-do text, click to toggle */}
       <span
-        onClick={onToggle}
+        onClick={props.onTextClick}
         style={{ flex: 1, minWidth: 0, overflowX: 'auto', cursor: isCompleted ? 'pointer' : 'pointer' }}
       >
         {children}
