@@ -138,7 +138,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           return (
             <div key={idx} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <a
-                href={link.link}
+                href={`ext+container:name=${project.name}&url=${link.link}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="icon-link"
@@ -163,7 +163,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    window.open(link.link, '_blank', 'noopener,noreferrer');
+                    window.open(`ext+container:name=${project.name}&url=${link.link}`, '_blank')
                   }
                 }}
                 onMouseEnter={e => {
@@ -228,7 +228,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 >
                   {link.title || link.link}
                 </span>
-               
+
               </a>
             </div>
           );

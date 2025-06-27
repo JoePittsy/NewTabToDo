@@ -304,7 +304,6 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
                   <span
                     style={{
                       textDecoration: todo.completed ? 'line-through' : 'none',
-                      maxWidth: '220px',
                       overflowX: 'auto',
                       whiteSpace: 'nowrap',
                       textOverflow: 'ellipsis',
