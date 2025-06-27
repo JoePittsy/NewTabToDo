@@ -33,7 +33,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
 
   // Only run on mount, not on every render
   React.useEffect(() => {
-    setLinks(ensureIds(initialLinks));
+    setLinks(ensureIds(JSON.parse(JSON.stringify(initialLinks))));
     // eslint-disable-next-line
   }, []);
 
@@ -175,6 +175,10 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
   return (
     <form
       style={{ display: 'flex', flexDirection: 'column', gap: '1.2em', minWidth: 300 }}
+      onSubmit={e => {
+        e.preventDefault();
+        onSave(name, logo, JSON.parse(JSON.stringify(links)));
+      }}
     >
       <h2 style={{ margin: 0, fontSize: '1.3em', color: '#8ec6ff' }}>{title}</h2>
       <label style={{ fontWeight: 500 }}>

@@ -1,74 +1,58 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import ToDoList, { ToDoItem } from './ToDoList';
-import { MenuProvider, ContextMenu, useMenuContext } from './ContextMenu';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './EditProjectDialog';
-import { useProjects } from './ProjectsProvider';
+import { useProjects, deepCloneProject } from './ProjectsProvider';
+import {
+  Menu as ContexifyMenu,
+  Item as ContexifyItem,
+  Separator as ContexifySeparator,
+  Submenu as ContexifySubmenu,
+  useContextMenu as useContexifyContextMenu
+} from 'react-contexify';
+import 'react-contexify/dist/ReactContexify.css';
 import './ProjectCard.css';
 
 export interface QuickLink {
-    label: string;
-    url?: string;
-    children?: QuickLink[];
+  label: string;
+  url?: string;
+  children?: QuickLink[];
 }
 
-interface QuickLinksDropdownProps {
-    links: QuickLink[];
-}
 
-const QuickLinksDropdown: React.FC<QuickLinksDropdownProps & { projectName?: string }> = ({ links, projectName }) => {
-    const [open, setOpen] = useState(false);
-    return (
-        <div className="quick-links-dropdown">
-            <button onClick={() => setOpen((o) => !o)} className="dropdown-toggle">
-                Links
-            </button>
-            {open && (
-                <ul className="dropdown-menu">
-                    {links.map((link, idx) => (
-                        <li key={idx}>
-                            {Array.isArray(link.children) && link.children.length > 0 ? (
-                                <QuickLinksDropdown links={link.children} projectName={projectName} />
-                            ) : (
-                                link.url ? <a href={`ext+container:name=${projectName ?? ''}&url=${link.url}`} target="_blank" rel="noopener noreferrer">{link.label}</a> : link.label
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
-};
 
 interface ProjectCardProps {
-    project: {
-        name: string;
-        logo: string;
-        todos: ToDoItem[];
-        quickLinks: QuickLink[];
-    };
-    dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  project: {
+    name: string;
+    logo: string;
+    todos: ToDoItem[];
+    quickLinks: QuickLink[];
+  };
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) => {
-  const menu = useMenuContext();
   const dialog = useDialog();
   const { updateProject, deleteProject, closeProject, openProject } = useProjects();
-  const [proj, setProj] = useState(project);
+  // Always deep clone project for local state to avoid shared references
+  const [proj, setProj] = useState(() => deepCloneProject(project));
+  const MENU_ID = React.useId ? React.useId() : `project-card-menu-${project.name}`;
+  const { show: showMenu } = useContexifyContextMenu({ id: MENU_ID });
 
-  // Sync local state with prop changes
+  // Sync local state with prop changes, always deep clone
   React.useEffect(() => {
-    setProj(project);
+    setProj(deepCloneProject(project));
   }, [project]);
 
   function handleEdit() {
+    // Always pass a deep clone of the current project links to the dialog
     dialog.openDialog(
       <EditProjectDialog
         title="Edit Project"
         name={proj.name}
         logo={proj.logo}
-        links={proj.quickLinks}
+        links={deepCloneProject(proj).quickLinks}
         onSave={(name, logo, links) => {
           if (name === '__DELETE__') {
             deleteProject(proj.name);
@@ -78,38 +62,33 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           }
           // If the project was renamed, update open projects list as well
           if (name !== proj.name) {
-            updateProject(proj.name, { name, logo, quickLinks: links });
-            setProj(p => ({ ...p, name, logo, quickLinks: links }));
-            // Remove old name from openedProjects and add new name
+            updateProject(proj.name, { name, logo, quickLinks: JSON.parse(JSON.stringify(links)) });
+            setProj((p: typeof proj) => ({ ...p, name, logo, quickLinks: JSON.parse(JSON.stringify(links)) }));
             closeProject(proj.name);
             setTimeout(() => {
-              // openProject may need to be called after state updates
               if (typeof window !== 'undefined') {
-                // Use setTimeout to ensure context state is updated
                 setTimeout(() => openProject(name), 0);
               }
             }, 0);
           } else {
-            setProj(p => ({ ...p, name, logo, quickLinks: links }));
-            updateProject(proj.name, { name, logo, quickLinks: links });
+            setProj((p: typeof proj) => ({ ...p, name, logo, quickLinks: JSON.parse(JSON.stringify(links)) }));
+            updateProject(proj.name, { name, logo, quickLinks: JSON.parse(JSON.stringify(links)) });
           }
           dialog.closeDialog();
         }}
         onCancel={dialog.closeDialog}
       />
     );
-    menu.closeMenu();
   }
 
   function handleClose() {
     closeProject(proj.name);
-    menu.closeMenu();
   }
 
   // Add setTodos function to update todos in context and local state
   const setTodos = (todos: ToDoItem[]) => {
-    setProj(p => ({ ...p, todos }));
-    updateProject(proj.name, { todos });
+    setProj((p: typeof proj) => ({ ...p, todos: JSON.parse(JSON.stringify(todos)) }));
+    updateProject(proj.name, { todos: JSON.parse(JSON.stringify(todos)) });
   };
 
   return (
@@ -124,7 +103,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               style={{ background: 'none', border: 'none', color: '#8ec6ff', fontSize: '1.6em', cursor: 'pointer', padding: '0 0.1em', borderRadius: 6, marginRight: 0 }}
               onClick={e => {
                 e.stopPropagation();
-                menu.openMenu(e.currentTarget);
+                showMenu({ event: e });
+              }}
+              onContextMenu={e => {
+                e.preventDefault();
+                showMenu({ event: e });
               }}
               tabIndex={0}
             >
@@ -143,32 +126,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
         </div>
       </div>
-      <ContextMenu>
-        <MenuLinkItem
-          link={{
-            label: 'Links',
-            children: proj.quickLinks,
-          }}
-          projectName={proj.name}
-        />
-        <li style={{ listStyle: 'none', padding: '0.3em 1.2em', borderTop: '1px solid #333', marginTop: 6 }}>
-          <button
-            onClick={handleEdit}
-            style={{ background: 'none', color: '#8ec6ff', border: 'none', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: 0 }}
-          >
-            Edit Project
-          </button>
-        </li>
-        <li style={{ listStyle: 'none', padding: '0.3em 1.2em' }}>
-          <button
-            onClick={handleClose}
-            style={{ background: 'none', color: '#e57373', border: 'none', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: 0 }}
-          >
-            Close Project
-          </button>
-        </li>
-        {/* Add more menu sections/options here later */}
-      </ContextMenu>
+      {/* Contextify Menu */}
+      <ContexifyMenu id={MENU_ID} animation="fade">
+        <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}> 
+          <QuickLinksMenu links={proj.quickLinks} projectName={proj.name} />
+        </ContexifySubmenu>
+        <ContexifySeparator />
+        <ContexifyItem onClick={handleEdit}>
+          Edit Project
+        </ContexifyItem>
+        <ContexifyItem onClick={handleClose}>
+          Close Project
+        </ContexifyItem>
+      </ContexifyMenu>
       <div className="project-todos">
         <ToDoList todos={proj.todos} setTodos={setTodos} />
       </div>
@@ -178,11 +148,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
 // Wrap export with MenuProvider
 const ProjectCardWithProviders = (props: ProjectCardProps) => (
-  <MenuProvider>
-    <DialogProvider>
-      <ProjectCard {...props} />
-    </DialogProvider>
-  </MenuProvider>
+  <DialogProvider>
+    <ProjectCard {...props} />
+  </DialogProvider>
 );
 
 export default ProjectCardWithProviders;
@@ -228,4 +196,32 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
       )}
     </li>
   );
+};
+
+// Recursive component to render QuickLink as ContexifyItem or ContexifySubmenu
+const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({ links, projectName }) => {
+  return <>
+    {links.map((link, idx) => {
+      if (link.url && (!link.children || link.children.length === 0)) {
+        return (
+          <ContexifyItem key={idx} onClick={() => window.open(`ext+container:name=${projectName}&url=${link.url}`, '_blank')}>
+            {link.label}
+          </ContexifyItem>
+        );
+      } else if (link.children && link.children.length > 0) {
+        return (
+          <ContexifySubmenu key={idx} label={link.label}>
+            <QuickLinksMenu links={link.children} projectName={projectName} />
+          </ContexifySubmenu>
+        );
+      } else {
+        // No url, no children: just label, disabled
+        return (
+          <ContexifyItem key={idx} disabled>
+            {link.label}
+          </ContexifyItem>
+        );
+      }
+    })}
+  </>;
 };

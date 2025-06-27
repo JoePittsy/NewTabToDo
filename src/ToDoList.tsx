@@ -34,7 +34,6 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   const [now, setNow] = useState(Date.now());
   const [dragging, setDragging] = useState(false);
   const [confirmIdx, setConfirmIdx] = useState<number|null>(null);
-  const [pendingMoveIdx, setPendingMoveIdx] = useState<number|null>(null);
 
   // On mount, assign order to todos if not present
   React.useEffect(() => {
@@ -65,22 +64,16 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   };
 
   const handleToggle = (idx: number) => {
+    // Instantly toggle completion
     if (!todos[idx].completed) {
-      // Mark as completed visually (strike-through), but don't move yet
       const updated = todos.map((todo: ToDoItem, i: number) =>
         i === idx ? { ...todo, completed: true, completedAt: Date.now() } : todo
       );
-      setTodos(updated);
-      setPendingMoveIdx(idx);
-      setTimeout(() => {
-        setTodos([
-          ...updated.filter((t: ToDoItem) => !t.completed),
-          ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-        ]);
-        setPendingMoveIdx(null);
-      }, 250);
+      setTodos([
+        ...updated.filter((t: ToDoItem) => !t.completed),
+        ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      ]);
     } else {
-      // Instantly mark as incomplete and move
       const updated = todos.map((todo: ToDoItem, i: number) =>
         i === idx ? { ...todo, completed: false, completedAt: undefined } : todo
       );
@@ -92,16 +85,10 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   };
 
   // For incomplete, sort by order ascending
-  const incomplete = todos
-    .map((t: ToDoItem, i: number) => ({ ...t, _idx: i }))
-    .filter((t: any) => !t.completed || pendingMoveIdx === t._idx)
-    .sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
-  const completed = todos
-    .map((t: ToDoItem, i: number) => ({ ...t, _idx: i }))
-    .filter((t: any) => t.completed && pendingMoveIdx !== t._idx)
-    .sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
+  const incomplete = todos.filter((t: ToDoItem) => !t.completed).sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
+  const completed = todos.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
   // Use unique IDs for dnd-kit, not array indexes
-  const incompleteIds = incomplete.map((todo: any) => {
+  const incompleteIds = incomplete.map((todo: ToDoItem) => {
     // Use a stable unique id for each todo, e.g. based on text + order
     return `${todo.text}__${todo.order ?? 0}`;
   });
@@ -224,14 +211,14 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0 }}>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
               <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
-                {incomplete.map((todo: any, idx: number) => (
+                {incomplete.map((todo: ToDoItem, idx: number) => (
                   <React.Fragment key={incompleteIds[idx]}>
                     <SortableItem
                       id={incompleteIds[idx]}
                       className={todo.completed ? 'completed' : ''}
                       isCompleted={todo.completed}
                       onTextClick={() => {
-                        if (confirmIdx !== idx) handleToggle(todo._idx);
+                        if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
                       }}
                       style={{ userSelect: 'none' }}
                       title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
@@ -239,7 +226,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
                       {todo.text}
                       <InfoLine
                         createdOn={todo.createdOn}
-                        onDelete={() => handleDeleteTodo(todo._idx)}
+                        onDelete={() => handleDeleteTodo(todos.indexOf(todo))}
                         showConfirm={confirmIdx === idx}
                         setShowConfirm={v => setConfirmIdx(v ? idx : null)}
                       />
@@ -291,10 +278,10 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           </button>
           {showCompleted && (
             <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 0.7, margin: 0, padding: 0 }}>
-              {completed.map((todo: any, idx: number) => (
+              {completed.map((todo: ToDoItem, idx: number) => (
                 <li
                   key={idx}
-                  onClick={() => handleToggle(todo._idx)}
+                  onClick={() => handleToggle(todos.indexOf(todo))}
                   style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                 >

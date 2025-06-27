@@ -22,8 +22,17 @@ interface ProjectsContextType {
 
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);
 
+export function deepCloneProject(proj: Project): Project {
+    return {
+        ...proj,
+        todos: JSON.parse(JSON.stringify(proj.todos)),
+        quickLinks: JSON.parse(JSON.stringify(proj.quickLinks)),
+    };
+}
+
 async function loadAllProjectsFromIDB(): Promise<Project[]> {
-    return await getAllProjects();
+    const raw = await getAllProjects();
+    return raw.map(deepCloneProject);
 }
 
 export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,13 +48,13 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [reloadProjects]);
 
     const addProject = useCallback((project: Project) => {
-        putProject(project).then(() => reloadProjects());
+        putProject(deepCloneProject(project)).then(() => reloadProjects());
     }, [reloadProjects]);
 
     const updateProject = useCallback((name: string, updates: Partial<Project>) => {
         const proj = projects.find(p => p.name === name);
         if (!proj) return;
-        const updated = { ...proj, ...updates };
+        const updated = deepCloneProject({ ...proj, ...updates });
         putProject(updated).then(() => reloadProjects());
     }, [projects, reloadProjects]);
 
