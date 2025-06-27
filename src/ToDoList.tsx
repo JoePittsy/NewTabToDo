@@ -14,6 +14,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 export interface ToDoItem {
   text: string;
@@ -34,7 +35,8 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [dragging, setDragging] = useState(false);
-  const [confirmIdx, setConfirmIdx] = useState<number|null>(null);
+  const [confirmIdx, setConfirmIdx] = useState<number | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // On mount, assign order to todos if not present
   React.useEffect(() => {
@@ -201,8 +203,13 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
     );
   }
 
+  function handleClearCompleted() {
+    setTodos(todos.filter((t: ToDoItem) => !t.completed));
+    setShowClearConfirm(false);
+  }
+
   return (
-    <div style={{display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden'}}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <form onSubmit={handleAdd} style={{ marginBottom: '1em', display: 'flex', gap: '0.5em', flexShrink: 0 }}>
         <input
           type="text"
@@ -213,9 +220,9 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
         />
       </form>
       {/* Proportional flex container for lists */}
-      <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '0.5em'}}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '0.5em' }}>
         {/* Incomplete (to-do) list: 66% */}
-        <div style={{flex: 2, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
+        <div style={{ flex: 2, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0 }}>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
               <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
@@ -291,6 +298,20 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
               ▶
             </span>
             Completed ({completed.length})
+            {completed.length > 0 && (
+              <span
+                title="Clear all completed to-dos"
+                style={{ marginLeft: 'auto', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', fontSize: '1.1em' }}
+                onClick={e => { e.stopPropagation(); setShowClearConfirm(true); }}
+                tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setShowClearConfirm(true); } }}
+                aria-label="Clear all completed to-dos"
+                role="button"
+              >
+                <TrashIcon className="size-6 flex-none "
+                />
+              </span>
+            )}
           </button>
           {showCompleted && (
             <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 0.7, margin: 0, padding: 0 }}>
@@ -324,6 +345,21 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           )}
         </div>
       </div>
+      {showClearConfirm && ReactDOM.createPortal(
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(0,0,0,0.45)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ background: '#23272f', borderRadius: 12, boxShadow: '0 8px 32px #000a', padding: '2em 2em 1.5em', minWidth: 320, textAlign: 'center', border: '2px solid #e57373' }}>
+            <div style={{ color: '#e57373', fontWeight: 700, fontSize: '1.1em', marginBottom: 16 }}>Clear all completed to-dos?</div>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+              <button onClick={handleClearCompleted} style={{ background: '#e57373', color: '#fff', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Clear</button>
+              <button onClick={() => setShowClearConfirm(false)} style={{ background: 'none', color: '#8ec6ff', border: '1.5px solid #8ec6ff', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Cancel</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
