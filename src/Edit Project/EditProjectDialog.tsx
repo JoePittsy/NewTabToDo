@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import LinksEditor from './LinksEditor';
+import IconLinksEditor from './IconLinksEditor';
+import { Project } from '../ProjectsProvider';
 
 interface EditProjectDialogProps {
-  title: string;
-  name: string;
-  logo: string;
-  links?: any[];
-  onSave: (name: string, logo: string, links: any[]) => void;
+  project: Project;
+  onSave: (project: Project) => void;
   onCancel: () => void;
 }
 
-const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName, logo: initialLogo, title, links: initialLinks = [], onSave, onCancel }) => {
-  const [name, setName] = useState(initialName);
-  const [logo, setLogo] = useState(initialLogo);
-  const [logoPreview, setLogoPreview] = useState(initialLogo);
-  const [links, setLinks] = useState<any[]>(initialLinks);
-  const [activeTab, setActiveTab] = useState<'general' | 'links'>('general');
-  // Add a state for delete confirmation
+const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, onCancel }) => {
+  const [name, setName] = useState(project.name);
+  const [logo, setLogo] = useState(project.logo);
+  const [logoPreview, setLogoPreview] = useState(project.logo);
+  const [links, setLinks] = useState<any[]>(project.quickLinks || []);
+  const [iconLinks, setIconLinks] = useState(project.iconLinks || []);
+  const [activeTab, setActiveTab] = useState<'general' | 'links' | 'iconLinks'>('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // 1. Helper to generate unique IDs
@@ -35,9 +34,10 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
 
   // Only run on mount, not on every render
   React.useEffect(() => {
-    setLinks(ensureIds(JSON.parse(JSON.stringify(initialLinks))));
+    setLinks(ensureIds(JSON.parse(JSON.stringify(project.quickLinks || []))));
+    setIconLinks(JSON.parse(JSON.stringify(project.iconLinks || [])));
     // eslint-disable-next-line
-  }, []);
+  }, [project]); // Only run once on mount
 
   function updateLink(path: number[], newLink: any) {
     setLinks(prev => {
@@ -98,8 +98,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
     setShowDeleteConfirm(true);
   }
   function confirmDelete() {
-    // Pass a special value to onSave to indicate deletion
-    onSave('__DELETE__', '', []);
+    onSave({ ...project, name: '__DELETE__', logo: '', quickLinks: [], iconLinks: [], todos: [] });
   }
   function cancelDelete() {
     setShowDeleteConfirm(false);
@@ -110,10 +109,16 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
       style={{ display: 'flex', flexDirection: 'column', gap: '1.2em', width: 600, height: 600 }}
       onSubmit={e => {
         e.preventDefault();
-        onSave(name, logo, JSON.parse(JSON.stringify(links)));
+        onSave({
+          ...project,
+          name,
+          logo,
+          quickLinks: JSON.parse(JSON.stringify(links)),
+          iconLinks: JSON.parse(JSON.stringify(iconLinks)),
+        });
       }}
     >
-      <h2 style={{ margin: 0, fontSize: '1.3em', color: '#8ec6ff' }}>{title}</h2>
+      <h2 style={{ margin: 0, fontSize: '1.3em', color: '#8ec6ff' }}>{name}</h2>
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '1.5px solid #222' }}>
         <button
@@ -156,6 +161,26 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
         >
           Links
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('iconLinks')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: activeTab === 'iconLinks' ? '#8ec6ff' : '#7a869a',
+            fontWeight: activeTab === 'iconLinks' ? 700 : 500,
+            fontSize: '1em',
+            padding: '0.5em 1.2em',
+            borderBottom: activeTab === 'iconLinks' ? '2.5px solid #8ec6ff' : '2.5px solid transparent',
+            cursor: 'pointer',
+            outline: 'none',
+            borderRadius: '8px 8px 0 0',
+            marginRight: 2,
+            transition: 'color 0.2s, border-bottom 0.2s',
+          }}
+        >
+          Icon Links
+        </button>
       </div>
       {/* Tab content */}
       {activeTab === 'general' && (
@@ -197,9 +222,14 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ name: initialName
           />
         </div>
       )}
+      {activeTab === 'iconLinks' && (
+        <div style={{overflowY: 'auto'}}>
+          <IconLinksEditor iconLinks={iconLinks} setIconLinks={setIconLinks} />
+        </div>
+      )}
       <div style={{ display: 'flex', gap: '1em', justifyContent: 'flex-end', marginTop: 'auto' }}>
         <button type="button" onClick={onCancel} style={{ background: 'none', color: '#8ec6ff', border: 'none', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.2em', borderRadius: 6 }}>Cancel</button>
-        <button type="submit" onClick={() => onSave(name, logo, links)} style={{ background: '#8ec6ff', color: '#23272f', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.2em', borderRadius: 6 }}>Save</button>
+        <button type="submit" style={{ background: '#8ec6ff', color: '#23272f', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.2em', borderRadius: 6 }}>Save</button>
         <button type="button" onClick={handleDelete} style={{ background: '#e57373', color: '#fff', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.2em', borderRadius: 6, marginLeft: 8 }}>Delete Project</button>
       </div>
       {showDeleteConfirm && (

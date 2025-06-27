@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import ToDoList, { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './Edit Project/EditProjectDialog';
-import { useProjects, deepCloneProject } from './ProjectsProvider';
+import { useProjects, deepCloneProject, Project } from './ProjectsProvider';
 import {
   Menu as ContexifyMenu,
   Item as ContexifyItem,
@@ -23,12 +23,7 @@ export interface QuickLink {
 
 
 interface ProjectCardProps {
-  project: {
-    name: string;
-    logo: string;
-    todos: ToDoItem[];
-    quickLinks: QuickLink[];
-  };
+  project: Project;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
@@ -46,33 +41,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   }, [project]);
 
   function handleEdit() {
-    // Always pass a deep clone of the current project links to the dialog
+    // Always pass a deep clone of the current project to the dialog
     dialog.openDialog(
       <EditProjectDialog
-        title="Edit Project"
-        name={proj.name}
-        logo={proj.logo}
-        links={deepCloneProject(proj).quickLinks}
-        onSave={(name, logo, links) => {
-          if (name === '__DELETE__') {
+        project={deepCloneProject(proj)}
+        onSave={updatedProject => {
+          if (updatedProject.name === '__DELETE__') {
             deleteProject(proj.name);
             dialog.closeDialog();
             window.location.reload(); // Or trigger parent state update if needed
             return;
           }
           // If the project was renamed, update open projects list as well
-          if (name !== proj.name) {
-            updateProject(proj.name, { name, logo, quickLinks: JSON.parse(JSON.stringify(links)) });
-            setProj((p: typeof proj) => ({ ...p, name, logo, quickLinks: JSON.parse(JSON.stringify(links)) }));
+          if (updatedProject.name !== proj.name) {
+            updateProject(proj.name, updatedProject);
+            setProj(updatedProject);
             closeProject(proj.name);
             setTimeout(() => {
               if (typeof window !== 'undefined') {
-                setTimeout(() => openProject(name), 0);
+                setTimeout(() => openProject(updatedProject.name), 0);
               }
             }, 0);
           } else {
-            setProj((p: typeof proj) => ({ ...p, name, logo, quickLinks: JSON.parse(JSON.stringify(links)) }));
-            updateProject(proj.name, { name, logo, quickLinks: JSON.parse(JSON.stringify(links)) });
+            setProj(updatedProject);
+            updateProject(proj.name, updatedProject);
           }
           dialog.closeDialog();
         }}
@@ -128,7 +120,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
       </div>
       {/* Contextify Menu */}
       <ContexifyMenu id={MENU_ID} animation="fade">
-        <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}> 
+        <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}>
           <QuickLinksMenu links={proj.quickLinks} projectName={proj.name} />
         </ContexifySubmenu>
         <ContexifySeparator />
@@ -139,6 +131,109 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           Close Project
         </ContexifyItem>
       </ContexifyMenu>
+
+      <div className='icon-links' style={{ height: '56px', padding: '0.25rem', display: 'flex', alignItems: 'center', gap: 12 }}>
+        {proj.iconLinks?.map((link, idx) => {
+          const tooltipId = `icon-link-tooltip-${proj.name.replace(/\s+/g, '-')}-${idx}`;
+          return (
+            <div key={idx} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <a
+                href={link.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+                tabIndex={0}
+                aria-describedby={tooltipId}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  minWidth: 44,
+                  minHeight: 44,
+                  borderRadius: 8,
+                  transition: 'background 0.15s',
+                  padding: 4,
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    window.open(link.link, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+                onMouseEnter={e => {
+                  const tooltip = document.getElementById(tooltipId);
+                  if (tooltip) tooltip.style.opacity = '1';
+                }}
+                onMouseLeave={e => {
+                  const tooltip = document.getElementById(tooltipId);
+                  if (tooltip) tooltip.style.opacity = '0';
+                }}
+                onFocus={e => {
+                  const tooltip = document.getElementById(tooltipId);
+                  if (tooltip) tooltip.style.opacity = '1';
+                }}
+                onBlur={e => {
+                  const tooltip = document.getElementById(tooltipId);
+                  if (tooltip) tooltip.style.opacity = '0';
+                }}
+              >
+                <img
+                  src={link.icon}
+                  alt={link.title || 'Icon'}
+                  style={{
+                    height: 32,
+                    width: 32,
+                    objectFit: 'contain',
+                    borderRadius: 6,
+                    background: '#fff',
+                    border: '1px solid #e0e0e0',
+                    boxShadow: '0 1px 4px #0002',
+                    marginBottom: link.title ? 2 : 0,
+                    transition: 'transform 0.15s',
+                  }}
+                  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
+                  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+                />
+                {/* Custom tooltip for fast hover */}
+                <span
+                  id={tooltipId}
+                  style={{
+                    pointerEvents: 'none',
+                    opacity: 0,
+                    position: 'absolute',
+                    bottom: 40,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#23272f',
+                    color: '#f3f6fa',
+                    borderRadius: 6,
+                    padding: '4px 10px',
+                    fontSize: '0.95em',
+                    fontWeight: 500,
+                    whiteSpace: 'pre',
+                    boxShadow: '0 2px 12px #0007',
+                    zIndex: 100,
+                    transition: 'opacity 0.08s',
+                    maxWidth: 220,
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                  }}
+                  role="tooltip"
+                >
+                  {link.title || link.link}
+                </span>
+               
+              </a>
+            </div>
+          );
+        })}
+      </div>
       <div className="project-todos">
         <ToDoList todos={proj.todos} setTodos={setTodos} />
       </div>

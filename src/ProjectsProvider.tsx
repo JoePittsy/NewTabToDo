@@ -3,11 +3,18 @@ import { getAllProjects, putProject, deleteProjectByName, IDBProject } from './i
 import { ToDoItem } from './ToDoList';
 import { QuickLink } from './ProjectCard';
 
+export interface IconLink {
+    link: string;
+    icon: string;
+    title?: string;
+}
+
 export interface Project {
     name: string;
     logo: string;
     todos: ToDoItem[];
     quickLinks: QuickLink[];
+    iconLinks?: IconLink[];
 }
 
 interface ProjectsContextType {

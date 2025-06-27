@@ -7,7 +7,7 @@ import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './Edit Project/EditProjectDialog';
 import CommandPalette from './CommandPalette';
-import { ProjectsProvider, useProjects } from './ProjectsProvider';
+import { ProjectsProvider, useProjects, Project, IconLink } from './ProjectsProvider';
 import {
     DndContext as ProjectDndContext,
     closestCenter as projectClosestCenter,
@@ -72,21 +72,19 @@ function App() {
     }, [projects]);
 
     function handleCreateProject(initialName?: string) {
+        const emptyProject: Project = {
+            name: initialName || '',
+            logo: '',
+            todos: [],
+            quickLinks: [],
+            iconLinks: [],
+        };
         dialog.openDialog(
             <EditProjectDialog
-                title="Create New Project"
-                name={initialName || ''}
-                logo=""
-                links={[]}
-                onSave={(name, logo, links) => {
-                    const newProject = {
-                        name,
-                        logo: logo || '',
-                        todos: [],
-                        quickLinks: links || [],
-                    };
-                    addProject(newProject);
-                    openProject(name); // Open the new project automatically
+                project={emptyProject}
+                onSave={proj => {
+                    addProject(proj);
+                    openProject(proj.name); // Open the new project automatically
                     dialog.closeDialog();
                 }}
                 onCancel={dialog.closeDialog}
