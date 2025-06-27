@@ -28,6 +28,8 @@ function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
     const dialog = useDialog();
     const [commandOpen, setCommandOpen] = useState(false);
+    // Snap preview state for DnD drop target
+    const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
     useEffect(() => {
         function onKeyDown(e: KeyboardEvent) {
@@ -110,11 +112,16 @@ function App() {
         .filter((p): p is NonNullable<typeof p> => Boolean(p));
     function handleDragEnd(event: any) {
         const { active, over } = event;
+        setDropTargetId(null); // Clear snap preview
         if (!over || active.id === over.id) return;
         const oldIndex = openedProjects.indexOf(active.id);
         const newIndex = openedProjects.indexOf(over.id);
         if (oldIndex === -1 || newIndex === -1) return;
         setOpenedProjects(projectArrayMove(openedProjects, oldIndex, newIndex));
+    }
+    function handleDragOver(event: any) {
+        const { over } = event;
+        setDropTargetId(over?.id ?? null);
     }
 
     return (
@@ -151,10 +158,10 @@ function App() {
                         Use <span><kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>Ctrl</kbd> + <kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>K</kbd> </span>to open the command palette
                     </div>
                 ) : (
-                    <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd}>
+                    <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd} onDragOver={handleDragOver}>
                         <ProjectSortableContext items={openedProjects} strategy={projectVerticalListSortingStrategy}>
                             {openProjectObjs.map((project, idx) => (
-                                <SortableProjectCard key={project.name} id={project.name} project={project} />
+                                <SortableProjectCard key={project.name} id={project.name} project={project} isDropTarget={dropTargetId === project.name} />
                             ))}
                         </ProjectSortableContext>
                     </ProjectDndContext>
@@ -166,17 +173,27 @@ function App() {
 }
 
 // Sortable wrapper for ProjectCard
-function SortableProjectCard({ id, project }: { id: string, project: any }) {
+function SortableProjectCard({ id, project, isDropTarget }: { id: string, project: any, isDropTarget?: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useProjectSortable({ id });
     // Only use drag handle on a dedicated element, not the whole card
+    // Compute transform and transition for pop effect
+    let cardTransform = transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined;
+    if (isDropTarget) {
+        cardTransform = (cardTransform ? cardTransform + ' ' : '') + 'scale(1.02)';
+    }
+    let cardTransition = transition || undefined;
+    if (isDropTarget) {
+        cardTransition = (cardTransition ? cardTransition + ',' : '') + ' box-shadow 0.18s cubic-bezier(.4,2,.6,1), transform 0.18s cubic-bezier(.4,2,.6,1)';
+    }
     return (
         <div
             ref={setNodeRef}
             style={{
-                transform: transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined,
-                transition,
+                transform: cardTransform,
+                transition: cardTransition,
                 opacity: isDragging ? 0.5 : 1,
                 zIndex: isDragging ? 1000 : undefined,
+                borderRadius: isDropTarget ? 12 : undefined,
             }}
             {...attributes}
         >
