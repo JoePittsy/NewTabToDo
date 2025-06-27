@@ -22,6 +22,7 @@ import {
     verticalListSortingStrategy as projectVerticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SettingsProvider } from './SettingsProvider';
+import PlusIcon from '@heroicons/react/20/solid/PlusIcon';
 
 function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
@@ -119,9 +120,19 @@ function App() {
     return (
         <>
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
+                        {/* FAB to open command palette */}
+            <div className="fixed bottom-8 left-8 z-[10010]">
+                <button
+                    type="button"
+                    className="cursor-pointer rounded-full bg-slate-600 p-1 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    onClick={() => setCommandOpen(true)}
+                >
+                    <PlusIcon aria-hidden="true" className="size-12" />
+                </button>
+            </div>
             <main
                 id="MAIN"
-                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em', overflowX: 'auto', minHeight: '60vh' }}
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', overflowX: 'auto', minHeight: '60vh' }}
             >
                 {openProjectObjs.length === 0 ? (
                     <div style={{
