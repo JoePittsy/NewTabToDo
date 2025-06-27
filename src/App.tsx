@@ -93,7 +93,7 @@ function App() {
     }
 
     function handlePaletteChange(item: any) {
-        if (item && item.query) {
+        if (item && (item.query || item.query ==='')) {
             setCommandOpen(false);
             setTimeout(() => handleCreateProject(item.query), 0);
         } else if (item && item.url) {

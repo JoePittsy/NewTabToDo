@@ -48,7 +48,7 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
 
     // Define quickActions here so it's always in scope
     const quickActions = [
-        { name: 'Create a new Project...', icon: PlusCircleIcon, url: '#' },
+        { name: 'Create a new Project...', icon: PlusCircleIcon, action: 'createProject' },
         { name: 'Open All Projects', icon: FolderOpenIcon, action: 'openAll' },
         { name: 'Open projects with active to-dos', icon: CheckCircleIcon, action: 'openActiveTodos' },
         { name: 'Close All Projects', icon: XCircleIcon, action: 'closeAll' },
@@ -95,6 +95,10 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
             setOpen(false);
             setQuery('');
             handleShowHelp();
+        } else if (action === 'createProject') {
+            if (onChange) {
+                onChange({ query });
+            }
         }
     }
 
@@ -188,10 +192,17 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
                                 handleQuickAction(item.action);
                                 return;
                             }
+                            if (item && item.url) {
+                                window.location = item.url;
+                                return;
+                            }
+                            // Fix: if item has a 'query' property, treat as create project
+                            if (item && typeof item.query === 'string' && onChange) {
+                                onChange({ query: item.query });
+                                return;
+                            }
                             if (onChange) {
                                 onChange(item);
-                            } else if (item && item.url) {
-                                window.location = item.url;
                             }
                         }}
                     >
@@ -376,14 +387,14 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
                                         {quickActions.map((action: any) => (
                                             <ComboboxOption
                                                 key={action.name}
-                                                value={action.action === undefined ? { ...action, name: `Create project ${query}`, query } : action}
+                                                value={action}
                                                 className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
                                             >
                                                 <action.icon
                                                     className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
                                                     aria-hidden="true"
                                                 />
-                                                <span className="ml-3 flex-auto truncate">{action.action === undefined ? `Create project ${query}` : action.name}</span>
+                                                <span className="ml-3 flex-auto truncate">{action.action === 'createProject' ? `Create project${query ? ` "${query}"` : ''}` : action.name}</span>
                                             </ComboboxOption>
                                         ))}
                                     </ul>
@@ -396,3 +407,4 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
         </Dialog>
     )
 }
+    
