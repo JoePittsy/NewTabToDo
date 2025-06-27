@@ -82,6 +82,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           ...completed.filter((t: ToDoItem) => !t.completed),
           ...completed.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
         ]);
+        window.dispatchEvent(new Event('firework')); // Trigger global firework
       }, 250);
     } else {
       const updated = todos.map((todo: ToDoItem, i: number) =>

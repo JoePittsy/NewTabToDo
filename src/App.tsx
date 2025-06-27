@@ -23,6 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SettingsProvider } from './SettingsProvider';
 import PlusIcon from '@heroicons/react/20/solid/PlusIcon';
+import FireworkEffect from './FireworkEffect';
 
 function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
@@ -30,6 +31,8 @@ function App() {
     const [commandOpen, setCommandOpen] = useState(false);
     // Snap preview state for DnD drop target
     const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+    // Replace single firework state with an array of active fireworks
+    const [fireworks, setFireworks] = useState<number[]>([]);
 
     useEffect(() => {
         function onKeyDown(e: KeyboardEvent) {
@@ -74,6 +77,15 @@ function App() {
         }
         // Only run when projects change or openedProjects change
     }, [projects]);
+
+    useEffect(() => {
+        // Listen for custom event to trigger fireworks globally
+        function onFireworkEvent(e: any) {
+            setFireworks(fw => [...fw, Date.now() + Math.random()]);
+        }
+        window.addEventListener('firework', onFireworkEvent);
+        return () => window.removeEventListener('firework', onFireworkEvent);
+    }, []);
 
     function handleCreateProject(initialName?: string) {
         const emptyProject: Project = {
@@ -126,6 +138,9 @@ function App() {
 
     return (
         <>
+            {fireworks.map(id => (
+                <FireworkEffect key={id} trigger={true} onDone={() => setFireworks(fw => fw.filter(f => f !== id))} multiple={8} />
+            ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
                         {/* FAB to open command palette */}
             <div className="fixed bottom-8 left-8 z-[10010]">
