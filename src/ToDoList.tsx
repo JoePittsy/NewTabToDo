@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { useSettings } from './SettingsProvider';
 
 export interface ToDoItem {
   text: string;
@@ -37,6 +38,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   const [dragging, setDragging] = useState(false);
   const [confirmIdx, setConfirmIdx] = useState<number | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const settings = useSettings();
 
   // On mount, assign order to todos if not present
   React.useEffect(() => {
@@ -82,7 +84,9 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           ...completed.filter((t: ToDoItem) => !t.completed),
           ...completed.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
         ]);
-        window.dispatchEvent(new Event('firework')); // Trigger global firework
+        if (settings?.General?.showFireworks !== false) {
+          window.dispatchEvent(new Event('firework'));
+        }
       }, 250);
     } else {
       const updated = todos.map((todo: ToDoItem, i: number) =>

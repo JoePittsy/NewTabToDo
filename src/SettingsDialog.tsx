@@ -14,6 +14,7 @@ const tabList = [
 
 interface GeneralSettings {
     useFirefoxContainers: boolean;
+    showFireworks?: boolean;
 }
 
 export interface Settings {
@@ -29,6 +30,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
     useEffect(() => {
         setDraft(settings);
+    }, [settings]);
+
+    // Set default for showFireworks if not present
+    useEffect(() => {
+        if (settings && settings.General && settings.General.showFireworks === undefined) {
+            setDraft(s => s ? { ...s, General: { ...s.General, showFireworks: true } } : s);
+        }
     }, [settings]);
 
     const onSave = async () => {
@@ -89,6 +97,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                         <div style={{ color: '#b8c7e0', fontSize: '0.98em', marginLeft: 28, marginBottom: 8 }}>
                             When enabled, links will open in a container named after the project. Firefox and the <a href="https://addons.mozilla.org/en-US/firefox/addon/open-url-in-container/">Open external links in a container</a> exstention are required.
                         </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0.7em 0 0.7em 0', fontSize: '1.05em', color: '#f3f6fa' }}>
+                            <input
+                                type="checkbox"
+                                checked={draft.General.showFireworks !== false}
+                                onChange={e => setDraft(s => s ? { ...s, General: { ...s.General, showFireworks: e.target.checked } } : s)}
+                                style={{ width: 18, height: 18, accentColor: '#8ec6ff' }}
+                                aria-label="Show fireworks when completing to-dos"
+                            />
+                            Show fireworks when completing to-dos
+                        </label>
                     </div>
                 )}
 

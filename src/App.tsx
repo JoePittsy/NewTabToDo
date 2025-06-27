@@ -24,6 +24,7 @@ import {
 import { SettingsProvider } from './SettingsProvider';
 import PlusIcon from '@heroicons/react/20/solid/PlusIcon';
 import FireworkEffect from './FireworkEffect';
+import { Bars4Icon } from '@heroicons/react/24/outline';
 
 function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
@@ -149,7 +150,7 @@ function App() {
                     className="cursor-pointer rounded-full bg-slate-600 p-1 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
                     onClick={() => setCommandOpen(true)}
                 >
-                    <PlusIcon aria-hidden="true" className="size-12" />
+                    <Bars4Icon aria-hidden="true" className="size-12 p-2" />
                 </button>
             </div>
             <main
