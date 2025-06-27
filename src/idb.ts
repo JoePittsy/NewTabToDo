@@ -89,3 +89,29 @@ export async function deleteProjectByName(name: string): Promise<void> {
     req.onerror = () => reject(req.error);
   });
 }
+
+export async function exportAllData(): Promise<{ projects: Project[]; settings: Settings }> {
+  const [projects, settings] = await Promise.all([
+    getAllProjects(),
+    getSettings(),
+  ]);
+  return { projects, settings };
+}
+
+export async function importAllData(data: { projects: Project[]; settings: Settings }): Promise<void> {
+  const db = await openDB();
+  // Clear both stores, then add new data
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction([PROJECTS_STORE_NAME, SETTINGS_STORE_NAME], 'readwrite');
+    tx.objectStore(PROJECTS_STORE_NAME).clear();
+    tx.objectStore(SETTINGS_STORE_NAME).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  // Add projects
+  for (const project of data.projects) {
+    await putProject(project);
+  }
+  // Add settings
+  await putSettings(data.settings);
+}
