@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { getAllProjects, putProject, deleteProjectByName, IDBProject } from './idb';
+import { ToDoItem } from './ToDoList';
+import { QuickLink } from './ProjectCard';
 
 export interface Project {
     name: string;
     logo: string;
-    todos: any[];
-    quickLinks: any[];
+    todos: ToDoItem[];
+    quickLinks: QuickLink[];
 }
 
 interface ProjectsContextType {

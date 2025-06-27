@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import ToDoList, { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
-import EditProjectDialog from './EditProjectDialog';
+import EditProjectDialog from './Edit Project/EditProjectDialog';
 import { useProjects, deepCloneProject } from './ProjectsProvider';
 import {
   Menu as ContexifyMenu,

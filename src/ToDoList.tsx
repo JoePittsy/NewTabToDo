@@ -21,6 +21,7 @@ export interface ToDoItem {
   completedAt?: number;
   order?: number;
   createdOn?: number;
+  _animating?: boolean;
 }
 
 interface ToDoListProps {
@@ -64,15 +65,22 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
   };
 
   const handleToggle = (idx: number) => {
-    // Instantly toggle completion
+    // Animate strike-through before moving to completed
     if (!todos[idx].completed) {
+      // Set a temporary flag for animation
       const updated = todos.map((todo: ToDoItem, i: number) =>
-        i === idx ? { ...todo, completed: true, completedAt: Date.now() } : todo
+        i === idx ? { ...todo, _animating: true } : todo
       );
-      setTodos([
-        ...updated.filter((t: ToDoItem) => !t.completed),
-        ...updated.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-      ]);
+      setTodos(updated);
+      setTimeout(() => {
+        const completed = todos.map((todo: ToDoItem, i: number) =>
+          i === idx ? { ...todo, completed: true, completedAt: Date.now(), _animating: false } : { ...todo, _animating: false }
+        );
+        setTodos([
+          ...completed.filter((t: ToDoItem) => !t.completed),
+          ...completed.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+        ]);
+      }, 250);
     } else {
       const updated = todos.map((todo: ToDoItem, i: number) =>
         i === idx ? { ...todo, completed: false, completedAt: undefined } : todo
@@ -215,7 +223,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
                   <React.Fragment key={incompleteIds[idx]}>
                     <SortableItem
                       id={incompleteIds[idx]}
-                      className={todo.completed ? 'completed' : ''}
+                      className={todo.completed ? 'completed' : todo._animating ? 'animating' : ''}
                       isCompleted={todo.completed}
                       onTextClick={() => {
                         if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
@@ -223,7 +231,15 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
                       style={{ userSelect: 'none' }}
                       title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                     >
-                      {todo.text}
+                      <span
+                        style={{
+                          textDecoration: todo.completed || todo._animating ? 'line-through' : 'none',
+                          transition: 'text-decoration 0.2s',
+                          color: todo._animating ? '#8ec6ff' : undefined,
+                        }}
+                      >
+                        {todo.text}
+                      </span>
                       <InfoLine
                         createdOn={todo.createdOn}
                         onDelete={() => handleDeleteTodo(todos.indexOf(todo))}

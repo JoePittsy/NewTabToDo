@@ -5,7 +5,7 @@ import './App.css';
 import ProjectCard, { QuickLink } from './ProjectCard';
 import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
-import EditProjectDialog from './EditProjectDialog';
+import EditProjectDialog from './Edit Project/EditProjectDialog';
 import CommandPalette from './CommandPalette';
 import { ProjectsProvider, useProjects } from './ProjectsProvider';
 import {
@@ -51,12 +51,18 @@ function App() {
     }, []);
 
     useEffect(() => {
-        // On mount, open 5 projects with most recent to-dos if none are open
+        // On mount, open up to 5 projects with the most uncompleted to-dos
         if (openedProjects.length === 0 && projects.length > 0) {
-            // Sort projects by most recent to-do createdOn
-            const sorted = [...projects].sort((a, b) => {
-                const aLatest = Math.max(...(a.todos?.map(t => t.createdOn || 0) ?? [0]));
-                const bLatest = Math.max(...(b.todos?.map(t => t.createdOn || 0) ?? [0]));
+            // Only consider projects with at least one uncompleted to-do
+            const withUncompleted = projects.filter(p => (p.todos?.some((t: any) => !t.completed)));
+            // Sort by number of uncompleted to-dos (descending), then by most recent to-do createdOn
+            const sorted = [...withUncompleted].sort((a, b) => {
+                const aUncompleted = a.todos?.filter((t: any) => !t.completed).length ?? 0;
+                const bUncompleted = b.todos?.filter((t: any) => !t.completed).length ?? 0;
+                if (bUncompleted !== aUncompleted) return bUncompleted - aUncompleted;
+                // If tie, sort by most recent to-do createdOn
+                const aLatest = Math.max(...(a.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
+                const bLatest = Math.max(...(b.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
                 return bLatest - aLatest;
             });
             const top5 = sorted.slice(0, 5).map(p => p.name);
@@ -116,46 +122,35 @@ function App() {
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             <main
                 id="MAIN"
-                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em', overflowX: 'auto' }}
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '2em', overflowX: 'auto', minHeight: '60vh' }}
             >
-                <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd}>
-                    <ProjectSortableContext items={openedProjects} strategy={projectVerticalListSortingStrategy}>
-                        {openProjectObjs.map((project, idx) => (
-                            <SortableProjectCard key={project.name} id={project.name} project={project} />
-                        ))}
-                    </ProjectSortableContext>
-                </ProjectDndContext>
+                {openProjectObjs.length === 0 ? (
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        minHeight: '50vh',
+                        color: '#aaa',
+                        fontSize: '1.5rem',
+                        fontWeight: 500,
+                        letterSpacing: 0.2,
+                        textAlign: 'center',
+                    }}>
+                        Use <span><kbd style={{background:'#222',padding:'0.2em 0.5em',borderRadius:'4px',fontWeight:600}}>Ctrl</kbd> + <kbd style={{background:'#222',padding:'0.2em 0.5em',borderRadius:'4px',fontWeight:600}}>K</kbd> </span>to open the command palette
+                    </div>
+                ) : (
+                    <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd}>
+                        <ProjectSortableContext items={openedProjects} strategy={projectVerticalListSortingStrategy}>
+                            {openProjectObjs.map((project, idx) => (
+                                <SortableProjectCard key={project.name} id={project.name} project={project} />
+                            ))}
+                        </ProjectSortableContext>
+                    </ProjectDndContext>
+                )}
             </main>
-            {/* FAB for new project */}
-            <button
-                onClick={() => handleCreateProject()}
-                aria-label="Create new project"
-                style={{
-                    position: 'fixed',
-                    left: 32,
-                    bottom: 32,
-                    zIndex: 30000,
-                    background: '#8ec6ff',
-                    color: '#23272f',
-                    border: 'none',
-                    borderRadius: '100%',
-                    width: '64px',
-                    height: '64px',
-                    boxShadow: '0 4px 24px #0006',
-                    fontSize: '2.5em',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background 0.2s',
-                    outline: 'none',
-                    padding: 0,
-                    lineHeight: 1,
-                }}
-            >
-                <span style={{ display: 'block', width: '100%', textAlign: 'center', lineHeight: 0, marginBottom: '0.5rem', fontSize: '1em', fontWeight: 700 }}>+</span>
-            </button>
+
         </>
     );
 }

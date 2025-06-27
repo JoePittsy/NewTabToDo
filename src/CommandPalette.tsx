@@ -12,6 +12,7 @@ import {
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { DocumentPlusIcon, FolderIcon, FolderPlusIcon, HashtagIcon, TagIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/20/solid';
+import { PlusCircleIcon, FolderOpenIcon, CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useRef } from 'react'
 import { useProjects } from './ProjectsProvider'
 import { useDialog } from './DialogProvider'
@@ -25,13 +26,17 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
     const [lastActiveIndex, setLastActiveIndex] = useState<number | null>(null);
     const listRef = useRef<HTMLUListElement>(null);
 
-    // Sort unopened projects by most recent to-do createdOn
+    // Sort unopened projects by most recent uncompleted to-do createdOn
     const unopened = projects
         .filter(p => !openedProjects.includes(p.name))
-        .map(p => ({
-            ...p,
-            lastNote: Math.max(...(p.todos?.map(t => t.createdOn || 0) ?? [0]))
-        }))
+        .map(p => {
+            // Find the most recent uncompleted to-do
+            const uncompleted = (p.todos ?? []).filter((t: any) => !t.completed);
+            return {
+                ...p,
+                lastNote: uncompleted.length > 0 ? Math.max(...uncompleted.map(t => t.createdOn || 0)) : 0
+            };
+        })
         .sort((a, b) => b.lastNote - a.lastNote);
 
     const filteredProjects =
@@ -43,10 +48,11 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
 
     // Define quickActions here so it's always in scope
     const quickActions = [
-        { name: 'Create a new Project...', icon: DocumentPlusIcon, url: '#' },
-        { name: 'Open All Projects', icon: FolderPlusIcon, action: 'openAll' },
-        { name: 'Close All Projects', icon: FolderIcon, action: 'closeAll' },
-        { name: 'Show Help', icon: QuestionMarkCircleIcon, action: 'showHelp' },
+        { name: 'Create a new Project...', icon: PlusCircleIcon, url: '#' },
+        { name: 'Open All Projects', icon: FolderOpenIcon, action: 'openAll' },
+        { name: 'Open projects with active to-dos', icon: CheckCircleIcon, action: 'openActiveTodos' },
+        { name: 'Close All Projects', icon: XCircleIcon, action: 'closeAll' },
+        { name: 'Show Help', icon: InformationCircleIcon, action: 'showHelp' },
     ]
 
     function handleShowHelp() {
@@ -67,6 +73,17 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
                     // Add unopened to openedProjects, preserving order
                     const all = [...openedProjects, ...unopenedNames.filter(n => !openedProjects.includes(n))];
                     // Remove duplicates
+                    setOpenedProjects(Array.from(new Set(all)));
+                }, 0);
+            }
+        } else if (action === 'openActiveTodos') {
+            setOpen(false);
+            setQuery('');
+            // Open all projects with at least one uncompleted to-do
+            const activeTodoProjects = projects.filter(p => (p.todos ?? []).some((t: any) => !t.completed) && !openedProjects.includes(p.name)).map(p => p.name);
+            if (activeTodoProjects.length > 0) {
+                setTimeout(() => {
+                    const all = [...openedProjects, ...activeTodoProjects.filter(n => !openedProjects.includes(n))];
                     setOpenedProjects(Array.from(new Set(all)));
                 }, 0);
             }
@@ -309,9 +326,9 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
                                                         <span className="ml-3 text-xs text-gray-400" style={{ minWidth: 110, textAlign: 'right' }}
                                                             title={project.lastNote > 0 ? new Date(project.lastNote).toLocaleString() : undefined}
                                                         >
-                                                            {project.lastNote > 0 ?
-                                                                new Date(project.lastNote).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit', hour: '2-digit', minute: '2-digit' })
-                                                                : 'No notes'}
+                                                            {project.lastNote > 0 ? `${project.todos.filter(t => !t.completed).length} - 
+                                                                ${new Date(project.lastNote).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+                                                                : 'No active to-dos'}
                                                         </span>
                                                         <span className="ml-3 hidden flex-none text-gray-400 group-data-focus:inline">Jump to...</span>
                                                     </ComboboxOption>
