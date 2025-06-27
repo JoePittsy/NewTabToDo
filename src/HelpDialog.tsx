@@ -1,5 +1,6 @@
 import { Label } from '@headlessui/react';
 import React, { useState } from 'react';
+import DialogHeader from './DialogHeader';
 
 const TABS = [
     { label: 'General', key: 'general' },
@@ -14,32 +15,8 @@ const HelpDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [tab, setTab] = useState('general');
 
     return (
-        <div style={{
-           
-        }}>
-            <h2 style={{ fontSize: '1.7em', marginBottom: 18, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>Help</h2>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 22, borderBottom: '1px solid #333', paddingBottom: 6 }}>
-                {TABS.map(t => (
-                    <button
-                        key={t.key}
-                        onClick={() => setTab(t.key)}
-                        style={{
-                            padding: '0.35em 1.1em',
-                            borderRadius: 6,
-                            border: 'none',
-                            background: tab === t.key ? '#8ec6ff' : 'transparent',
-                            color: tab === t.key ? '#23272f' : '#ccc',
-                            fontWeight: tab === t.key ? 700 : 500,
-                            cursor: 'pointer',
-                            fontSize: '1em',
-                            transition: 'background 0.15s',
-                            outline: tab === t.key ? '2px solid #8ec6ff' : 'none',
-                        }}
-                    >
-                        {t.label}
-                    </button>
-                ))}
-            </div>
+        <div style={{ minHeight: 340, background: '#23272f', borderRadius: 12, color: '#f3f6fa', position: 'relative' }}>
+           <DialogHeader title='Help' tabs={TABS} activeTab={tab} setActiveTab={setTab} onClose={onClose}  />
             <div style={{ color: '#ccc', fontSize: '1.13em', marginBottom: 18, minHeight: 120, lineHeight: 1.7 }}>
                 {tab === 'general' && (
                     <>
@@ -88,24 +65,7 @@ const HelpDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                 )}
             </div>
-            <button
-                onClick={onClose}
-                style={{
-                    marginTop: 8,
-                    padding: '0.5em 1.2em',
-                    borderRadius: 6,
-                    background: '#8ec6ff',
-                    color: '#23272f',
-                    border: 'none',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontSize: '1.08em',
-                    boxShadow: '0 2px 8px #0003',
-                    minWidth: 90,
-                }}
-            >
-                Close
-            </button>
+
         </div>
     );
 };

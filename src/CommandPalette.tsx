@@ -17,6 +17,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useProjects } from './ProjectsProvider'
 import { useDialog } from './DialogProvider'
 import HelpDialog from './HelpDialog'
+import SettingsDialog from './SettingsDialog';
 
 export default function CommandPalette({ open, setOpen, onChange }: { open: boolean; setOpen: (open: boolean) => void; onChange?: (item: any) => void }) {
     const [query, setQuery] = useState('');
@@ -53,6 +54,7 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
         { name: 'Open projects with active to-dos', icon: CheckCircleIcon, action: 'openActiveTodos' },
         { name: 'Close All Projects', icon: XCircleIcon, action: 'closeAll' },
         { name: 'Show Help', icon: InformationCircleIcon, action: 'showHelp' },
+        { name: 'Settings', icon: TagIcon, action: 'settings' },
     ]
 
     function handleShowHelp() {
@@ -99,6 +101,10 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
             if (onChange) {
                 onChange({ query });
             }
+        } else if (action === 'settings') {
+            setOpen(false);
+            setQuery('');
+            dialog.openDialog(<SettingsDialog onClose={dialog.closeDialog} />);
         }
     }
 
@@ -407,4 +413,3 @@ export default function CommandPalette({ open, setOpen, onChange }: { open: bool
         </Dialog>
     )
 }
-    

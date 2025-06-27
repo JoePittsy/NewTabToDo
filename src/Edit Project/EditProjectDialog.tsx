@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import LinksEditor from './LinksEditor';
 import IconLinksEditor from './IconLinksEditor';
 import { Project } from '../ProjectsProvider';
+import DialogHeader, { TabDef } from '../DialogHeader';
 
 interface EditProjectDialogProps {
   project: Project;
@@ -10,12 +11,28 @@ interface EditProjectDialogProps {
 }
 
 const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, onCancel }) => {
+
+  const TABS: TabDef[] = [
+    {
+      key: 'general',
+      label: 'General',
+    },
+    {
+      key: 'links',
+      label: 'Links',
+    },
+    {
+      key: 'iconLinks',
+      label: 'Icon Links',
+    }
+  ]
+
   const [name, setName] = useState(project.name);
   const [logo, setLogo] = useState(project.logo);
   const [logoPreview, setLogoPreview] = useState(project.logo);
   const [links, setLinks] = useState<any[]>(project.quickLinks || []);
   const [iconLinks, setIconLinks] = useState(project.iconLinks || []);
-  const [activeTab, setActiveTab] = useState<'general' | 'links' | 'iconLinks'>('general');
+  const [activeTab, setActiveTab] = useState<string>('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // 1. Helper to generate unique IDs
@@ -118,70 +135,8 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
         });
       }}
     >
-      <h2 style={{ margin: 0, fontSize: '1.3em', color: '#8ec6ff' }}>{name}</h2>
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '1.5px solid #222' }}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('general')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: activeTab === 'general' ? '#8ec6ff' : '#7a869a',
-            fontWeight: activeTab === 'general' ? 700 : 500,
-            fontSize: '1em',
-            padding: '0.5em 1.2em',
-            borderBottom: activeTab === 'general' ? '2.5px solid #8ec6ff' : '2.5px solid transparent',
-            cursor: 'pointer',
-            outline: 'none',
-            borderRadius: '8px 8px 0 0',
-            marginRight: 2,
-            transition: 'color 0.2s, border-bottom 0.2s',
-          }}
-        >
-          General
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('links')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: activeTab === 'links' ? '#8ec6ff' : '#7a869a',
-            fontWeight: activeTab === 'links' ? 700 : 500,
-            fontSize: '1em',
-            padding: '0.5em 1.2em',
-            borderBottom: activeTab === 'links' ? '2.5px solid #8ec6ff' : '2.5px solid transparent',
-            cursor: 'pointer',
-            outline: 'none',
-            borderRadius: '8px 8px 0 0',
-            marginRight: 2,
-            transition: 'color 0.2s, border-bottom 0.2s',
-          }}
-        >
-          Links
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('iconLinks')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: activeTab === 'iconLinks' ? '#8ec6ff' : '#7a869a',
-            fontWeight: activeTab === 'iconLinks' ? 700 : 500,
-            fontSize: '1em',
-            padding: '0.5em 1.2em',
-            borderBottom: activeTab === 'iconLinks' ? '2.5px solid #8ec6ff' : '2.5px solid transparent',
-            cursor: 'pointer',
-            outline: 'none',
-            borderRadius: '8px 8px 0 0',
-            marginRight: 2,
-            transition: 'color 0.2s, border-bottom 0.2s',
-          }}
-        >
-          Icon Links
-        </button>
-      </div>
+      <DialogHeader title={project.name} onClose={onCancel} activeTab={activeTab} setActiveTab={setActiveTab} tabs={TABS} />
+
       {/* Tab content */}
       {activeTab === 'general' && (
         <>
@@ -212,7 +167,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
         </>
       )}
       {activeTab === 'links' && (
-        <div style={{overflowY: 'auto'}}>
+        <div style={{ overflowY: 'auto' }}>
           <LinksEditor
             links={links}
             updateLink={updateLink}
@@ -223,7 +178,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
         </div>
       )}
       {activeTab === 'iconLinks' && (
-        <div style={{overflowY: 'auto'}}>
+        <div style={{ overflowY: 'auto' }}>
           <IconLinksEditor iconLinks={iconLinks} setIconLinks={setIconLinks} />
         </div>
       )}
