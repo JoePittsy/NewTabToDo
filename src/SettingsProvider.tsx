@@ -7,6 +7,7 @@ interface SettingsContextType {
     loading: boolean;
     updateSettings: (updates: Partial<Settings>) => Promise<void>;
     reloadSettings: () => void;
+    formatLink: (containerName: string, href: string) => string;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -34,8 +35,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setSettings(merged);
     }, [settings]);
 
+    // Format link based on Firefox Containers setting
+    const formatLink = useCallback((containerName: string, href: string) => {
+        if (settings?.General?.useFirefoxContainers) {
+            return `ext+container:name=${containerName}&url=${href}`;
+        }
+        return href;
+    }, [settings]);
+
     return (
-        <SettingsContext.Provider value={{ settings, loading, updateSettings, reloadSettings }}>
+        <SettingsContext.Provider value={{ settings, loading, updateSettings, reloadSettings, formatLink }}>
             {children}
         </SettingsContext.Provider>
     );
@@ -51,4 +60,10 @@ export function useUpdateSettings() {
     const ctx = useContext(SettingsContext);
     if (!ctx) throw new Error('useUpdateSettings must be used within a SettingsProvider');
     return ctx.updateSettings;
+}
+
+export function useFormatLink() {
+    const ctx = useContext(SettingsContext);
+    if (!ctx) throw new Error('useFormatLink must be used within a SettingsProvider');
+    return ctx.formatLink;
 }

@@ -13,6 +13,7 @@ import {
 } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.css';
 import './ProjectCard.css';
+import { useFormatLink, useSettings } from './SettingsProvider';
 
 export interface QuickLink {
   label: string;
@@ -34,6 +35,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   const [proj, setProj] = useState(() => deepCloneProject(project));
   const MENU_ID = React.useId ? React.useId() : `project-card-menu-${project.name}`;
   const { show: showMenu } = useContexifyContextMenu({ id: MENU_ID });
+
+  const formatLink = useFormatLink();
 
   // Sync local state with prop changes, always deep clone
   React.useEffect(() => {
@@ -138,7 +141,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           return (
             <div key={idx} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <a
-                href={`ext+container:name=${project.name}&url=${link.link}`}
+                href={formatLink(project.name, link.link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="icon-link"
@@ -163,7 +166,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    window.open(`ext+container:name=${project.name}&url=${link.link}`, '_blank')
+                    window.open(formatLink(project.name, link.link), '_blank')
                   }
                 }}
                 onMouseEnter={e => {
@@ -253,6 +256,7 @@ export default ProjectCardWithProviders;
 // Recursive menu link item for submenus
 const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ link, projectName }) => {
   const [submenuOpen, setSubmenuOpen] = useState(false);
+  const formatLink = useFormatLink();
   const hasChildren = Array.isArray(link.children) && link.children.length > 0;
   return (
     <li
@@ -287,7 +291,7 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
           )}
         </>
       ) : (
-        link.url ? <a href={`ext+container:name=${projectName ?? ''}&url=${link.url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
+        link.url ? <a href={formatLink(projectName??'', link.url)} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
       )}
     </li>
   );
@@ -295,11 +299,13 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
 
 // Recursive component to render QuickLink as ContexifyItem or ContexifySubmenu
 const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({ links, projectName }) => {
+  const formatLink = useFormatLink();
+
   return <>
     {links.map((link, idx) => {
       if (link.url && (!link.children || link.children.length === 0)) {
         return (
-          <ContexifyItem key={idx} onClick={() => window.open(`ext+container:name=${projectName}&url=${link.url}`, '_blank')}>
+          <ContexifyItem key={idx} onClick={() => window.open(formatLink(projectName??'', link.url??''), '_blank')}>
             {link.label}
           </ContexifyItem>
         );
