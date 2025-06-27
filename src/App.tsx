@@ -21,6 +21,7 @@ import {
     useSortable as useProjectSortable,
     verticalListSortingStrategy as projectVerticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { SettingsProvider } from './SettingsProvider';
 
 function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
@@ -68,7 +69,7 @@ function App() {
             const top5 = sorted.slice(0, 5).map(p => p.name);
             if (top5.length > 0) setOpenedProjects(top5);
         }
-    // Only run when projects change or openedProjects change
+        // Only run when projects change or openedProjects change
     }, [projects]);
 
     function handleCreateProject(initialName?: string) {
@@ -93,7 +94,7 @@ function App() {
     }
 
     function handlePaletteChange(item: any) {
-        if (item && (item.query || item.query ==='')) {
+        if (item && (item.query || item.query === '')) {
             setCommandOpen(false);
             setTimeout(() => handleCreateProject(item.query), 0);
         } else if (item && item.url) {
@@ -136,7 +137,7 @@ function App() {
                         letterSpacing: 0.2,
                         textAlign: 'center',
                     }}>
-                        Use <span><kbd style={{background:'#222',padding:'0.2em 0.5em',borderRadius:'4px',fontWeight:600}}>Ctrl</kbd> + <kbd style={{background:'#222',padding:'0.2em 0.5em',borderRadius:'4px',fontWeight:600}}>K</kbd> </span>to open the command palette
+                        Use <span><kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>Ctrl</kbd> + <kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>K</kbd> </span>to open the command palette
                     </div>
                 ) : (
                     <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd}>
@@ -173,13 +174,15 @@ function SortableProjectCard({ id, project }: { id: string, project: any }) {
     );
 }
 
-// Wrap App in DialogProvider and ProjectsProvider
+// Wrap App in SettingsProvider, then DialogProvider, then ProjectsProvider
 const AppWithProviders = () => (
-    <DialogProvider>
-        <ProjectsProvider>
-            <App />
-        </ProjectsProvider>
-    </DialogProvider>
+    <SettingsProvider>
+        <DialogProvider>
+            <ProjectsProvider>
+                <App />
+            </ProjectsProvider>
+        </DialogProvider>
+    </SettingsProvider>
 );
 
 export default AppWithProviders;

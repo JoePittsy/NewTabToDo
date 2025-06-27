@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DialogHeader from './DialogHeader';
-import { getSettings, putSettings } from './idb';
+import { useSettings, useUpdateSettings } from './SettingsProvider';
 
 interface SettingsDialogProps {
     onClose: () => void;
@@ -13,7 +13,6 @@ const tabList = [
 
 interface GeneralSettings {
     useFirefoxContainers: boolean;
-
 }
 
 export interface Settings {
@@ -22,26 +21,22 @@ export interface Settings {
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<string>('general');
-    const [settings, setSettings] = useState<Settings>();
-    const [loading, setLoading] = useState<boolean>(true);
+    const settings = useSettings();
+    const updateSettings = useUpdateSettings();
+    // Local draft state for editing before save
+    const [draft, setDraft] = useState<Settings | undefined>(settings);
 
     useEffect(() => {
-        getSettings().then(s => {
-            setSettings(s);
-            setLoading(false)
-        })
-    }, []);
+        setDraft(settings);
+    }, [settings]);
 
-    const onSave = () => {
-        if (!settings === undefined) onClose();
-        else {
-            putSettings(settings as Settings).then(() => {
-                onClose();
-            })
-        }
-    }
+    const onSave = async () => {
+        if (!draft) return onClose();
+        await updateSettings(draft);
+        onClose();
+    };
 
-    if (loading) return <></>;
+    if (!draft) return <></>;
 
     return (
         <div style={{ width: 480, minHeight: 340, background: '#23272f', borderRadius: 12, color: '#f3f6fa', position: 'relative' }}>
@@ -54,8 +49,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                         <label style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '1.2em 0 0.7em 0', fontSize: '1.05em', color: '#f3f6fa' }}>
                             <input
                                 type="checkbox"
-                                checked={settings!.General.useFirefoxContainers}
-                                onChange={e => setSettings(s => s ? { ...s, General: { ...s.General, useFirefoxContainers: e.target.checked } } : s)}
+                                checked={draft.General.useFirefoxContainers}
+                                onChange={e => setDraft(s => s ? { ...s, General: { ...s.General, useFirefoxContainers: e.target.checked } } : s)}
                                 style={{ width: 18, height: 18, accentColor: '#8ec6ff' }}
                                 aria-label="Use Firefox Containers"
                             />
