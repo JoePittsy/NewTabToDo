@@ -143,14 +143,44 @@ function App() {
                 <FireworkEffect key={id} trigger={true} onDone={() => setFireworks(fw => fw.filter(f => f !== id))} multiple={8} />
             ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
-                        {/* FAB to open command palette */}
-            <div className="fixed bottom-8 left-8 z-[10010]">
+            {/* Top-right buttons */}
+            <div className="fixed top-4 right-4 z-[10010] flex gap-2">
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-600 p-1 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
-                    onClick={() => setCommandOpen(true)}
+                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    onClick={() => {
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.accept = '.json';
+                        fileInput.onchange = (e: any) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                    try {
+                                        const projectData = JSON.parse(event.target?.result as string);
+                                        addProject(projectData);
+                                    } catch (error) {
+                                        console.error('Error parsing project file:', error);
+                                        alert('Invalid project file format');
+                                    }
+                                };
+                                reader.readAsText(file);
+                            }
+                        };
+                        fileInput.click();
+                    }}
+                    title="Import Project"
                 >
-                    <Bars4Icon aria-hidden="true" className="size-12 p-2" />
+                    📥
+                </button>
+                <button
+                    type="button"
+                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    onClick={() => setCommandOpen(true)}
+                    title="Command Palette"
+                >
+                    <Bars4Icon aria-hidden="true" className="size-6" />
                 </button>
             </div>
             <main
