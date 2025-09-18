@@ -4,11 +4,12 @@ import { ToDoItem } from './ToDoList';
 import { QuickLink } from './ProjectCard';
 
 export interface IconLink {
-    link: string;
-    icon?: string;
-    title?: string;
-    color?: string;
-    text?: string;
+  link: string;
+  icon?: string;
+  title?: string;
+  color?: string;
+  text?: string;
+  iconType: 'favicon' | 'custom' | 'color';
 }
 
 export interface AccordionState {
