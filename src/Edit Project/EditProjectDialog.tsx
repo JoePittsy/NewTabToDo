@@ -53,7 +53,13 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
   // Only run on mount, not on every render
   React.useEffect(() => {
     setLinks(ensureIds(JSON.parse(JSON.stringify(project.quickLinks || []))));
-    setIconLinks(JSON.parse(JSON.stringify(project.iconLinks || [])));
+    // Add default iconType to existing iconLinks
+    const iconLinksCopy = JSON.parse(JSON.stringify(project.iconLinks || []));
+    const iconLinksWithDefault = iconLinksCopy.map((link: any) => ({
+      ...link,
+      iconType: link.iconType || 'favicon'
+    }));
+    setIconLinks(iconLinksWithDefault);
     // eslint-disable-next-line
   }, [project]); // Only run once on mount
 
