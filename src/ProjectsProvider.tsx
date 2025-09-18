@@ -5,16 +5,27 @@ import { QuickLink } from './ProjectCard';
 
 export interface IconLink {
     link: string;
-    icon: string;
+    icon?: string;
     title?: string;
+    color?: string;
+    text?: string;
+}
+
+export interface AccordionState {
+    notesCollapsed: boolean;
+    todosCollapsed: boolean;
 }
 
 export interface Project {
     name: string;
     logo: string;
+    logoBackgroundColor?: string;  // New property for logo background
     todos: ToDoItem[];
     quickLinks: QuickLink[];
     iconLinks?: IconLink[];
+    notes?: string;
+    accordionState?: AccordionState;
+    pinned?: boolean;
 }
 
 interface ProjectsContextType {
@@ -36,6 +47,12 @@ export function deepCloneProject(proj: Project): Project {
         ...proj,
         todos: JSON.parse(JSON.stringify(proj.todos)),
         quickLinks: JSON.parse(JSON.stringify(proj.quickLinks)),
+        iconLinks: proj.iconLinks ? JSON.parse(JSON.stringify(proj.iconLinks)) : undefined,
+        notes: proj.notes ?? '',
+        accordionState: {
+            notesCollapsed: proj.accordionState?.notesCollapsed ?? false,
+            todosCollapsed: proj.accordionState?.todosCollapsed ?? false,
+        },
     };
 }
 
@@ -47,11 +64,18 @@ async function loadAllProjectsFromIDB(): Promise<Project[]> {
 export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [openedProjects, setOpenedProjects] = useState<string[]>([]);
-
+  
     const reloadProjects = useCallback(() => {
-        loadAllProjectsFromIDB().then(setProjects);
+        loadAllProjectsFromIDB().then(projects => {
+            setProjects(projects);
+            // Auto-open pinned projects on load
+            const pinnedProjects = projects.filter(p => p.pinned).map(p => p.name);
+            if (pinnedProjects.length > 0) {
+                setOpenedProjects(prev => [...new Set([...prev, ...pinnedProjects])]);
+            }
+        });
     }, []);
-
+  
     useEffect(() => {
         reloadProjects();
     }, [reloadProjects]);
@@ -92,3 +116,4 @@ export function useProjects() {
     if (!ctx) throw new Error('useProjects must be used within a ProjectsProvider');
     return ctx;
 }
+

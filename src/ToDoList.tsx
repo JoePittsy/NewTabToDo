@@ -284,19 +284,21 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
             onClick={() => setShowCompleted(v => !v)}
             aria-label={showCompleted ? 'Hide completed' : 'Show completed'}
             style={{
-              background: 'none',
+              background: '#2d313a',
               color: '#8ec6ff',
               border: 'none',
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: '1em',
               marginBottom: '0.5em',
-              padding: 0,
+              padding: '8px 12px',
               display: 'flex',
               alignItems: 'center',
               gap: '0.4em',
               userSelect: 'none',
               flexShrink: 0,
+              borderRadius: '8px',
+              width: '100%',
             }}
           >
             <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: showCompleted ? 'rotate(90deg)' : 'rotate(0deg)' }}>
@@ -319,12 +321,20 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
             )}
           </button>
           {showCompleted && (
-            <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 0.7, margin: 0, padding: 0 }}>
+            <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 1, margin: 0, padding: 0, background: '#23272f', borderRadius: '8px' }}>
               {completed.map((todo: ToDoItem, idx: number) => (
                 <li
                   key={idx}
                   onClick={() => handleToggle(todos.indexOf(todo))}
-                  style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  style={{
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    borderBottom: '1px solid #3a3f4a'
+                  }}
                   title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                 >
                   <span
@@ -337,11 +347,12 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
                       verticalAlign: 'middle',
                       transition: 'all 0.2s',
                       cursor: 'pointer',
+                      color: '#8ec6ff'
                     }}
                   >
                     {todo.text}
                   </span>
-                  <span style={{ fontSize: '0.9em', color: '#aaa', marginLeft: '1em', whiteSpace: 'nowrap', textDecoration: 'none' }}>
+                  <span style={{ fontSize: '0.9em', color: '#8ec6ff', marginLeft: '1em', whiteSpace: 'nowrap', textDecoration: 'none' }}>
                     {formatCompletedDate(todo.completedAt)}
                   </span>
                 </li>
