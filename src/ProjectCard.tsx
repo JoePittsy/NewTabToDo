@@ -347,22 +347,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           
           // Determine display content
           let displayContent;
+          const iconCommonStyle = {
+            height: 32,
+            width: 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 6,
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 1px 4px #0002',
+            transition: 'transform 0.15s',
+            marginBottom: link.title ? 2 : 0,
+            background: link.icon ? '#fff' : (link.color || '#6c757d'),
+            color: !link.icon ? '#fff' : undefined,
+            fontWeight: !link.icon ? 'bold' : undefined,
+            fontSize: !link.icon ? '1.2em' : undefined,
+            // objectFit removed from shared style
+          };
           if (link.icon) {
             displayContent = (
               <img
                 src={link.icon}
                 alt={link.title || 'Icon'}
-                style={{
-                  height: 32,
-                  width: 32,
-                  objectFit: 'contain',
-                  borderRadius: 6,
-                  background: '#fff',
-                  border: '1px solid #e0e0e0',
-                  boxShadow: '0 1px 4px #0002',
-                  marginBottom: link.title ? 2 : 0,
-                  transition: 'transform 0.15s',
-                }}
+                style={{ ...iconCommonStyle, objectFit: 'contain' }}
                 onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
                 onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
               />
@@ -372,24 +379,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             const displayText = link.text ||
                               (link.title ? link.title.charAt(0) :
                               link.link.split('/')[2]?.charAt(0) || '?');
-                              
             displayContent = (
               <div
-                style={{
-                  height: 32,
-                  width: 32,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 6,
-                  background: link.color || '#6c757d',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  fontSize: '1.2em',
-                  border: '1px solid #e0e0e0',
-                  boxShadow: '0 1px 4px #0002',
-                  transition: 'transform 0.15s',
-                }}
+                style={iconCommonStyle}
                 onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
                 onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
               >
@@ -397,7 +389,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               </div>
             );
           }
-          
           return (
             <div key={idx} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <a
