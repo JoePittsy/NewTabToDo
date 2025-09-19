@@ -312,9 +312,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             );
           } else {
             const displayText = link.text || (link.title ? link.title.charAt(0) : link.link.split('/')[2]?.charAt(0) || '?');
+            // Use link.color if iconType is 'color', else fallback to project color or default
+            const bgColor = link.iconType === 'color' && link.color ? link.color : (proj.logoBackgroundColor || '#6c757d');
             displayContent = (
               <div
                 className="icon-link-text"
+                style={{ background: bgColor, color: '#fff' }}
                 onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
                 onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
               >
@@ -369,85 +372,98 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
       <div className="project-body" style={{ display: 'flex', flexDirection: 'column', gap: '1em', marginTop: '0.5em', flex: 1 }}>
         {/* Tab Navigation */}
-  <div role="tablist" className="tabs tabs-lift project-tabs-group">
-    <a
-      role="tab"
-      className={`tab${activeTab === 'todos' ? ' tab-active' : ''} project-tab`}
-      tabIndex={0}
-      onClick={() => setActiveTab('todos')}
-    >
-      ToDo
-    </a>
-    <a
-      role="tab"
-      className={`tab${activeTab === 'completed' ? ' tab-active' : ''} project-tab`}
-      tabIndex={0}
-      onClick={() => setActiveTab('completed')}
-    >
-      Completed
-    </a>
-    <a
-      role="tab"
-      className={`tab${activeTab === 'notes' ? ' tab-active' : ''} project-tab`}
-      tabIndex={0}
-      onClick={() => setActiveTab('notes')}
-    >
-      Notes
-    </a>
-  </div>
-
-        {/* Tab Content */}
-        <div className="tab-content" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {activeTab === 'todos' && (
-            <div className="project-todos" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <ToDoList todos={proj.todos} setTodos={setTodos} />
-            </div>
-          )}
-
-          {activeTab === 'completed' && (
-            <div className="project-completed" style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <ul className="completed-list" style={{ flex: 1 }}>
-                {proj.todos
-                  .filter((todo: ToDoItem) => todo.completed)
-                  .map((todo: ToDoItem, idx: number) => (
-                    <li
-                      key={idx}
-                      className="completed-list-item"
-                    >
-                      <span className="completed-text">
-                        {todo.text}
-                      </span>
-                      <span className="completed-date">
-                        {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : ''}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-              <button
-                onClick={() => {
-                  const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
-                  setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
-                  updateProject(proj.name, { todos: updatedTodos });
-                }}
-                className="clear-all-btn"
-                style={{ position: 'absolute', bottom: '1em', right: '1em' }}
-              >
-                Clear All
-              </button>
-            </div>
-          )}
-
-          {activeTab === 'notes' && (
-            <div className="project-notes" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div
-                ref={notesEditorRef}
-                contentEditable
-                onInput={handleNotesChange}
-                className="project-notes-editor"
-              />
-            </div>
-          )}
+  {/* DaisyUI tabs-lift with tab-content, unique name per project */}
+  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%' }}>
+    <div className="tabs tabs-lift project-tabs-group" style={{ marginBottom: 0 }}>
+      <input
+        type="radio"
+        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+        className="tab project-tab"
+        aria-label="ToDo"
+        checked={activeTab === 'todos'}
+        onChange={() => setActiveTab('todos')}
+        tabIndex={0}
+      />
+      <input
+        type="radio"
+        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+        className="tab project-tab"
+        aria-label="Completed"
+        checked={activeTab === 'completed'}
+        onChange={() => setActiveTab('completed')}
+        tabIndex={0}
+      />
+      <input
+        type="radio"
+        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+        className="tab project-tab"
+        aria-label="Notes"
+        checked={activeTab === 'notes'}
+        onChange={() => setActiveTab('notes')}
+        tabIndex={0}
+      />
+    </div>
+    {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
+    <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div
+        className="tab-content bg-base-100 border-base-300 p-6"
+        style={{ display: activeTab === 'todos' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+      >
+        <div className="project-todos" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <ToDoList todos={proj.todos} setTodos={setTodos} />
         </div>
+      </div>
+      <div
+        className="tab-content bg-base-100 border-base-300 p-6"
+        style={{ display: activeTab === 'completed' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+      >
+        <div className="project-completed" style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
+          <ul className="completed-list" style={{ flex: 1 }}>
+            {proj.todos
+              .filter((todo: ToDoItem) => todo.completed)
+              .map((todo: ToDoItem, idx: number) => (
+                <li
+                  key={idx}
+                  className="completed-list-item"
+                >
+                  <span className="completed-text">
+                    {todo.text}
+                  </span>
+                  <span className="completed-date">
+                    {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : ''}
+                  </span>
+                </li>
+              ))}
+          </ul>
+          <button
+            onClick={() => {
+              const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+              setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+              updateProject(proj.name, { todos: updatedTodos });
+            }}
+            className="clear-all-btn"
+            style={{ position: 'absolute', bottom: '1em', right: '1em' }}
+          >
+            Clear All
+          </button>
+        </div>
+      </div>
+      <div
+        className="tab-content bg-base-100 border-base-300 p-6"
+        style={{ display: activeTab === 'notes' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+      >
+        <div className="project-notes" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div
+            ref={notesEditorRef}
+            contentEditable
+            onInput={handleNotesChange}
+            className="project-notes-editor"
+            style={{ height: '100%' }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
       </div>
     </div>
   );
