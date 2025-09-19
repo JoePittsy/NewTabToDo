@@ -369,26 +369,32 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
       <div className="project-body" style={{ display: 'flex', flexDirection: 'column', gap: '1em', marginTop: '0.5em', flex: 1 }}>
         {/* Tab Navigation */}
-  <div className="tab-container">
-          <button
-            className={`tab${activeTab === 'todos' ? ' active' : ''}`}
-            onClick={() => setActiveTab('todos')}
-          >
-            ToDo
-          </button>
-          <button
-            className={`tab${activeTab === 'completed' ? ' active' : ''}`}
-            onClick={() => setActiveTab('completed')}
-          >
-            Completed
-          </button>
-          <button
-            className={`tab${activeTab === 'notes' ? ' active' : ''}`}
-            onClick={() => setActiveTab('notes')}
-          >
-            Notes
-          </button>
-        </div>
+  <div role="tablist" className="tabs tabs-lift project-tabs-group">
+    <a
+      role="tab"
+      className={`tab${activeTab === 'todos' ? ' tab-active' : ''} project-tab`}
+      tabIndex={0}
+      onClick={() => setActiveTab('todos')}
+    >
+      ToDo
+    </a>
+    <a
+      role="tab"
+      className={`tab${activeTab === 'completed' ? ' tab-active' : ''} project-tab`}
+      tabIndex={0}
+      onClick={() => setActiveTab('completed')}
+    >
+      Completed
+    </a>
+    <a
+      role="tab"
+      className={`tab${activeTab === 'notes' ? ' tab-active' : ''} project-tab`}
+      tabIndex={0}
+      onClick={() => setActiveTab('notes')}
+    >
+      Notes
+    </a>
+  </div>
 
         {/* Tab Content */}
         <div className="tab-content" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

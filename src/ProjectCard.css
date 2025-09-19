@@ -1,3 +1,18 @@
+/* ProjectCard DaisyUI tab customizations */
+.project-tabs-group {
+  width: 100%;
+  margin-bottom: 0.5em;
+}
+.project-tab {
+  color: #fff;
+  font-weight: 600;
+  flex: 1 1 0%;
+  text-align: center;
+}
+.project-tab.tab-active {
+  color: #fff;
+  font-weight: 700;
+}
 /* Header buttons */
 .project-header-btn {
   background: none;
@@ -97,28 +112,6 @@
 }
 
 /* Tab navigation */
-.tab-container {
-  display: flex;
-  background: #2d313a;
-  border-radius: 8px;
-}
-.tab {
-  flex: 1;
-  padding: 0.8em;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: none;
-  background: none;
-  color: #f3f6fa;
-  font-weight: normal;
-  border-radius: 8px;
-}
-.tab.active {
-  color: #23272f;
-  font-weight: 600;
-  background-color: #8ec6ff;
-}
 
 /* Completed tab content */
 .project-completed {
