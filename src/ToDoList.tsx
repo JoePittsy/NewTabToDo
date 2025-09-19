@@ -224,7 +224,16 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           style={{ padding: '0.5em', width: '100%' }}
         />
       </form>
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#23272f', borderRadius: '8px', padding: '0.5em' }}>
+      <div
+  style={{
+    flex: 1,
+    minHeight: 0, // important when using flex layouts
+    maxHeight: "400px", // set the height limit (adjust as needed)
+    overflowY: "auto",
+    background: "#23272f",
+    borderRadius: "8px",
+    padding: "0.5em",
+    }}>
         <ul className="todo-list" style={{ margin: 0, padding: 0 }}>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
             <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
