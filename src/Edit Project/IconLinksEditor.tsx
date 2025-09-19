@@ -97,6 +97,7 @@ const IconLinkRow: React.FC<{
   onIconFile: (file: File) => void;
   onFavicon: () => void;
 }> = ({ idx, item, onChange, onDelete, onIconFile, onFavicon }) => {
+
   function handleChange(field: keyof IconLink, value: string) {
     onChange({
       ...item,
@@ -104,16 +105,26 @@ const IconLinkRow: React.FC<{
     });
   }
 
+  // When switching to color, clear icon (favicon)
   function handleIconTypeChange(newType: 'favicon' | 'custom' | 'color') {
-    onChange({
-      ...item,
-      iconType: newType
-    });
-    
-    if (newType === 'favicon') {
-      onFavicon();
+    if (newType === 'color') {
+      onChange({
+        ...item,
+        iconType: 'color',
+        icon: undefined // Remove favicon/custom icon
+      });
+    } else {
+      onChange({
+        ...item,
+        iconType: newType
+      });
+      if (newType === 'favicon') {
+        onFavicon();
+      }
     }
   }
+
+  // ...existing code...
 
   return (
     <div style={{
