@@ -170,6 +170,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
   return (
     <div className="project-card">
+     {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
       <div className="project-header">
         {proj.logo ? (
           <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{objectFit: 'cover'}} />
@@ -200,7 +201,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
         )}
         <div className="project-title-row" style={{ display: 'flex', alignItems: 'center', gap: '1.2em', justifyContent: 'space-between', width: '100%' }}>
-          <h2 className="project-name" style={{ margin: 0 }}>{proj.name}</h2>
+          <h2 className="project-name">{proj.name}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
             <button
               aria-label={proj.pinned ? "Unpin project" : "Pin project"}
@@ -212,23 +213,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                   return updated;
                 });
               }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: proj.pinned ? '#ffd700' : '#8ec6ff',
-                fontSize: '1.6em',
-                cursor: 'pointer',
-                padding: '0 0.1em',
-                borderRadius: 6,
-                marginRight: 0
-              }}
+              className={`project-header-btn${proj.pinned ? ' pinned' : ''}`}
               tabIndex={0}
             >
               {proj.pinned ? '📌' : '📍'}
             </button>
             <button
               aria-label="Project menu"
-              style={{ background: 'none', border: 'none', color: '#8ec6ff', fontSize: '1.6em', cursor: 'pointer', padding: '0 0.1em', borderRadius: 6, marginRight: 0 }}
+              className="project-header-btn"
               onClick={e => {
                 e.stopPropagation();
                 showMenu({ event: e });
@@ -244,7 +236,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             {dragHandleProps && (
               <button
                 aria-label="Drag to reorder"
-                style={{ background: 'none', border: 'none', color: '#8ec6ff', fontSize: '1.6em', cursor: 'grab', padding: '0 0.1em', borderRadius: 6, marginLeft: 0 }}
+                className="project-header-btn drag"
                 {...dragHandleProps}
                 tabIndex={0}
               >
@@ -270,30 +262,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         </ContexifyItem>
       </ContexifyMenu>
 
-      <div className='icon-links' style={{ height: '56px', padding: '0.25rem', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+  <div className='icon-links'>
+  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <button
             onClick={openAllLinks}
             className="icon-link"
             tabIndex={0}
             aria-describedby={`all-links-tooltip-${proj.name}`}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-              minWidth: 44,
-              minHeight: 44,
-              borderRadius: 8,
-              transition: 'background 0.15s',
-              padding: 4,
-              background: 'none',
-              border: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-              position: 'relative',
-            }}
             onMouseEnter={e => {
               const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
               if (tooltip) tooltip.style.opacity = '1';
@@ -303,7 +278,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               if (tooltip) tooltip.style.opacity = '0';
             }}
             onFocus={e => {
-              const tooltip = document.getElementById(`all-links极-tooltip-${proj.name}`);
+              const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
               if (tooltip) tooltip.style.opacity = '1';
             }}
             onBlur={e => {
@@ -315,27 +290,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </button>
           <span
             id={`all-links-tooltip-${proj.name}`}
-            style={{
-              pointerEvents: 'none',
-              opacity: 0,
-              position: 'absolute',
-              bottom: 40,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: '#23272f',
-              color: '#f3f6fa',
-              borderRadius: 6,
-              padding: '4px 10px',
-              fontSize: '0.95em',
-              fontWeight: 500,
-              whiteSpace: 'pre',
-              boxShadow: '0 2px 12px #0007',
-              zIndex: 100,
-              transition: 'opacity 0.08s',
-              maxWidth: 220,
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-            }}
+            className="icon-tooltip"
             role="tooltip"
           >
             Open all links
@@ -344,44 +299,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
         {proj.iconLinks?.map((link, idx) => {
           const tooltipId = `icon-link-tooltip-${proj.name.replace(/\s+/g, '-')}-${idx}`;
-          
-          // Determine display content
           let displayContent;
-          const iconCommonStyle = {
-            height: 32,
-            width: 32,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 6,
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 1px 4px #0002',
-            transition: 'transform 0.15s',
-            marginBottom: link.title ? 2 : 0,
-            background: link.icon ? '#fff' : (link.color || '#6c757d'),
-            color: !link.icon ? '#fff' : undefined,
-            fontWeight: !link.icon ? 'bold' : undefined,
-            fontSize: !link.icon ? '1.2em' : undefined,
-            // objectFit removed from shared style
-          };
           if (link.icon) {
             displayContent = (
               <img
                 src={link.icon}
                 alt={link.title || 'Icon'}
-                style={{ ...iconCommonStyle, objectFit: 'contain' }}
+                className="icon-link-img"
                 onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
                 onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
               />
             );
           } else {
-            // Use first letter of title or link domain
-            const displayText = link.text ||
-                              (link.title ? link.title.charAt(0) :
-                              link.link.split('/')[2]?.charAt(0) || '?');
+            const displayText = link.text || (link.title ? link.title.charAt(0) : link.link.split('/')[2]?.charAt(0) || '?');
             displayContent = (
               <div
-                style={iconCommonStyle}
+                className="icon-link-text"
                 onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
                 onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
               >
@@ -398,23 +331,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 className="icon-link"
                 tabIndex={0}
                 aria-describedby={tooltipId}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  minWidth: 44,
-                  minHeight: 44,
-                  borderRadius: 8,
-                  transition: 'background 0.15s',
-                  padding: 4,
-                  background: 'none',
-                  border: 'none',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     window.open(formatLink(project.name, link.link), '_blank')
@@ -440,27 +356,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 {displayContent}
                 <span
                   id={tooltipId}
-                  style={{
-                    pointerEvents: 'none',
-                    opacity: 0,
-                    position: 'absolute',
-                    bottom: 40,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: '#23272f',
-                    color: '#f3f6fa',
-                    borderRadius: 6,
-                    padding: '4px 10px',
-                    fontSize: '0.95em',
-                    fontWeight: 500,
-                    whiteSpace: 'pre',
-                    boxShadow: '0 2px 12px #0007',
-                    zIndex: 100,
-                    transition: 'opacity 0.08s',
-                    maxWidth: 220,
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                  }}
+                  className="icon-tooltip"
                   role="tooltip"
                 >
                   {link.title || link.link}
@@ -473,61 +369,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
       <div className="project-body" style={{ display: 'flex', flexDirection: 'column', gap: '1em', marginTop: '0.5em', flex: 1 }}>
         {/* Tab Navigation */}
-        <div className="tab-container" style={{ display: 'flex', background: '#2d313a', borderRadius: 8 }}>
+  <div className="tab-container">
           <button
-            className={`tab ${activeTab === 'todos' ? 'active' : ''}`}
+            className={`tab${activeTab === 'todos' ? ' active' : ''}`}
             onClick={() => setActiveTab('todos')}
-            style={{
-              flex: 1,
-              padding: '0.8em',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: 'none',
-              background: 'none',
-              color: activeTab === 'todos' ? '#23272f' : '#f3f6fa',
-              fontWeight: activeTab === 'todos' ? 600 : 'normal',
-              backgroundColor: activeTab === 'todos' ? '#8ec6ff' : 'transparent',
-              borderRadius: 8
-            }}
           >
             ToDo
           </button>
           <button
-            className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
+            className={`tab${activeTab === 'completed' ? ' active' : ''}`}
             onClick={() => setActiveTab('completed')}
-            style={{
-              flex: 1,
-              padding: '0.8em',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: 'none',
-              background: 'none',
-              color: activeTab === 'completed' ? '#23272f' : '#f3f6fa',
-              fontWeight: activeTab === 'completed' ? 600 : 'normal',
-              backgroundColor: activeTab === 'completed' ? '#8ec6ff' : 'transparent',
-              borderRadius: 8
-            }}
           >
             Completed
           </button>
           <button
-            className={`tab ${activeTab === 'notes' ? 'active' : ''}`}
+            className={`tab${activeTab === 'notes' ? ' active' : ''}`}
             onClick={() => setActiveTab('notes')}
-            style={{
-              flex: 1,
-              padding: '0.8em',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: 'none',
-              background: 'none',
-              color: activeTab === 'notes' ? '#23272f' : '#f3f6fa',
-              fontWeight: activeTab === 'notes' ? 600 : 'normal',
-              backgroundColor: activeTab === 'notes' ? '#8ec6ff' : 'transparent',
-              borderRadius: 8
-            }}
           >
             Notes
           </button>
@@ -542,8 +399,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           )}
 
           {activeTab === 'completed' && (
-            <div className="project-completed" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#23272f', borderRadius: 8, padding: '0.5em', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#2d313a', padding: '0.5em', borderRadius: 8, fontWeight: 600, marginBottom: '0.5em' }}>
+            <div className="project-completed">
+              <div className="completed-header">
                 <div>Completed Items</div>
                 <button
                   onClick={() => {
@@ -551,36 +408,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                     setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
                     updateProject(proj.name, { todos: updatedTodos });
                   }}
-                  style={{
-                    background: '#e57373',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 4,
-                    padding: '0.3em 0.8em',
-                    cursor: 'pointer',
-                    fontWeight: 600
-                  }}
+                  className="clear-all-btn"
                 >
                   Clear All
                 </button>
               </div>
-              <ul style={{ margin: 0, padding: 0 }}>
+              <ul className="completed-list">
                 {proj.todos
                   .filter((todo: ToDoItem) => todo.completed)
                   .map((todo: ToDoItem, idx: number) => (
                     <li
                       key={idx}
-                      style={{
-                        padding: '0.5em',
-                        borderBottom: '1px solid #3a3f4a',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                      }}
+                      className="completed-list-item"
                     >
-                      <span style={{ textDecoration: 'line-through', color: '#8ec6ff' }}>
+                      <span className="completed-text">
                         {todo.text}
                       </span>
-                      <span style={{ fontSize: '0.8em', color: '#8ec6ff' }}>
+                      <span className="completed-date">
                         {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : ''}
                       </span>
                     </li>
@@ -595,14 +439,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 ref={notesEditorRef}
                 contentEditable
                 onInput={handleNotesChange}
-                style={{
-                  flex: 1,
-                  padding: '0.5em',
-                  minHeight: '100px',
-                  border: '1px solid #444',
-                  borderRadius: 8,
-                  background: '#23272f'
-                }}
+                className="project-notes-editor"
               />
             </div>
           )}
