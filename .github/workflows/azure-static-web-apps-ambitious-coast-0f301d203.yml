@@ -27,7 +27,7 @@ jobs:
           action: "upload"
           app_location: "/" # Source of your app
           api_location: "" # Leave empty if you're not using an API
-          output_location: "dist" # Correct output directory for Vite
+          output_location: "dist" 
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -40,3 +40,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_COAST_0F301D203 }}
           action: "close"
+
