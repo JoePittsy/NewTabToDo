@@ -407,7 +407,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <div
         className="tab-content bg-base-100 border-base-300 p-6"
-        style={{ display: activeTab === 'todos' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+        style={{
+          display: activeTab === 'todos' ? 'block' : 'none',
+          flex: 1,
+          minHeight: 0,
+          height: '100%',
+          borderTop: 'none',
+          borderRadius: '0 0 1em 1em',
+        }}
       >
         <div className="project-todos" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <ToDoList todos={proj.todos} setTodos={setTodos} />
@@ -415,7 +422,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
       </div>
       <div
         className="tab-content bg-base-100 border-base-300 p-6"
-        style={{ display: activeTab === 'completed' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+        style={{
+          display: activeTab === 'completed' ? 'block' : 'none',
+          flex: 1,
+          minHeight: 0,
+          height: '100%',
+          borderTop: 'none',
+          borderRadius: '0 0 1em 1em',
+        }}
       >
         <div className="project-completed" style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
           <ul className="completed-list" style={{ flex: 1 }}>
@@ -450,7 +464,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
       </div>
       <div
         className="tab-content bg-base-100 border-base-300 p-6"
-        style={{ display: activeTab === 'notes' ? 'block' : 'none', flex: 1, minHeight: 0, height: '100%' }}
+        style={{
+          display: activeTab === 'notes' ? 'block' : 'none',
+          flex: 1,
+          minHeight: 0,
+          height: '100%',
+          borderTop: 'none',
+          borderRadius: '0 0 1em 1em',
+        }}
       >
         <div className="project-notes" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div
