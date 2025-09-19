@@ -475,25 +475,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         {/* Tab Navigation */}
         <div className="tab-container" style={{ display: 'flex', background: '#2d313a', borderRadius: 8 }}>
           <button
-            className={`tab ${activeTab === 'notes' ? 'active' : ''}`}
-            onClick={() => setActiveTab('notes')}
-            style={{
-              flex: 1,
-              padding: '0.8em',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: 'none',
-              background: 'none',
-              color: activeTab === 'notes' ? '#23272f' : '#f3f6fa',
-              fontWeight: activeTab === 'notes' ? 600 : 'normal',
-              backgroundColor: activeTab === 'notes' ? '#8ec6ff' : 'transparent',
-              borderRadius: 8
-            }}
-          >
-            Notes
-          </button>
-          <button
             className={`tab ${activeTab === 'todos' ? 'active' : ''}`}
             onClick={() => setActiveTab('todos')}
             style={{
@@ -531,28 +512,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           >
             Completed
           </button>
+          <button
+            className={`tab ${activeTab === 'notes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('notes')}
+            style={{
+              flex: 1,
+              padding: '0.8em',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              border: 'none',
+              background: 'none',
+              color: activeTab === 'notes' ? '#23272f' : '#f3f6fa',
+              fontWeight: activeTab === 'notes' ? 600 : 'normal',
+              backgroundColor: activeTab === 'notes' ? '#8ec6ff' : 'transparent',
+              borderRadius: 8
+            }}
+          >
+            Notes
+          </button>
         </div>
 
         {/* Tab Content */}
         <div className="tab-content" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {activeTab === 'notes' && (
-            <div className="project-notes" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div
-                ref={notesEditorRef}
-                contentEditable
-                onInput={handleNotesChange}
-                style={{
-                  flex: 1,
-                  padding: '0.5em',
-                  minHeight: '100px',
-                  border: '1px solid #444',
-                  borderRadius: 8,
-                  background: '#23272f'
-                }}
-              />
-            </div>
-          )}
-
           {activeTab === 'todos' && (
             <div className="project-todos" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <ToDoList todos={proj.todos} setTodos={setTodos} />
@@ -604,6 +586,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                     </li>
                   ))}
               </ul>
+            </div>
+          )}
+
+          {activeTab === 'notes' && (
+            <div className="project-notes" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div
+                ref={notesEditorRef}
+                contentEditable
+                onInput={handleNotesChange}
+                style={{
+                  flex: 1,
+                  padding: '0.5em',
+                  minHeight: '100px',
+                  border: '1px solid #444',
+                  borderRadius: 8,
+                  background: '#23272f'
+                }}
+              />
             </div>
           )}
         </div>
