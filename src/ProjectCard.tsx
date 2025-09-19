@@ -399,21 +399,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           )}
 
           {activeTab === 'completed' && (
-            <div className="project-completed">
-              <div className="completed-header">
-                <div>Completed Items</div>
-                <button
-                  onClick={() => {
-                    const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
-                    setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
-                    updateProject(proj.name, { todos: updatedTodos });
-                  }}
-                  className="clear-all-btn"
-                >
-                  Clear All
-                </button>
-              </div>
-              <ul className="completed-list">
+            <div className="project-completed" style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <ul className="completed-list" style={{ flex: 1 }}>
                 {proj.todos
                   .filter((todo: ToDoItem) => todo.completed)
                   .map((todo: ToDoItem, idx: number) => (
@@ -430,6 +417,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                     </li>
                   ))}
               </ul>
+              <button
+                onClick={() => {
+                  const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+                  setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+                  updateProject(proj.name, { todos: updatedTodos });
+                }}
+                className="clear-all-btn"
+                style={{ position: 'absolute', bottom: '1em', right: '1em' }}
+              >
+                Clear All
+              </button>
             </div>
           )}
 
