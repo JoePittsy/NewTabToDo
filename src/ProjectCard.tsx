@@ -47,6 +47,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   const [proj, setProj] = useState(() => deepCloneProject(project));
   const [notesValue, setNotesValue] = useState(() => project.notes ?? '');
   const [accordionState, setAccordionState] = useState<AccordionState>(() => computeAccordionState(project));
+  const [activeTab, setActiveTab] = useState<'notes' | 'todos' | 'completed'>('notes');
   const notesSaveHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notesEditorRef = useRef<HTMLDivElement | null>(null);
   const projectNameRef = useRef(proj.name);
@@ -472,34 +473,153 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         })}
       </div>
 
-      {/* Notes Section */}
-      <div className="project-notes" style={{ marginTop: '0.5em', marginBottom: '0.5em' }}>
-        <div 
-          className="accordion-header" 
-          onClick={() => setAccordionState(prev => ({ ...prev, notesCollapsed: !prev.notesCollapsed }))}
-          style={{ cursor: 'pointer', padding: '0.5em', background: '#2d313a', borderRadius: 8, fontWeight: 600 }}
-        >
-          Notes {accordionState.notesCollapsed ? '▶' : '▼'}
-        </div>
-        {!accordionState.notesCollapsed && (
-          <div
-            ref={notesEditorRef}
-            contentEditable
-            onInput={handleNotesChange}
-            style={{ 
-              padding: '0.5em',
-              minHeight: '100px',
-              border: '1px solid #444',
-              borderRadius: 8,
-              marginTop: '0.5em',
-              background: '#23272f'
+      <div className="project-body" style={{ display: 'flex', flexDirection: 'column', gap: '1em', marginTop: '0.5em', flex: 1 }}>
+        {/* Tab Navigation */}
+        <div className="tab-container" style={{ display: 'flex', background: '#2d313a', borderRadius: 8 }}>
+          <button
+            className={`tab ${activeTab === 'notes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('notes')}
+            style={{
+              flex: 1,
+              padding: '0.8em',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              border: 'none',
+              background: 'none',
+              color: activeTab === 'notes' ? '#23272f' : '#f3f6fa',
+              fontWeight: activeTab === 'notes' ? 600 : 'normal',
+              backgroundColor: activeTab === 'notes' ? '#8ec6ff' : 'transparent',
+              borderRadius: 8
             }}
-          />
-        )}
-      </div>
+          >
+            Notes
+          </button>
+          <button
+            className={`tab ${activeTab === 'todos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('todos')}
+            style={{
+              flex: 1,
+              padding: '0.8em',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              border: 'none',
+              background: 'none',
+              color: activeTab === 'todos' ? '#23272f' : '#f3f6fa',
+              fontWeight: activeTab === 'todos' ? 600 : 'normal',
+              backgroundColor: activeTab === 'todos' ? '#8ec6ff' : 'transparent',
+              borderRadius: 8
+            }}
+          >
+            ToDo
+          </button>
+          <button
+            className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
+            onClick={() => setActiveTab('completed')}
+            style={{
+              flex: 1,
+              padding: '0.8em',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              border: 'none',
+              background: 'none',
+              color: activeTab === 'completed' ? '#23272f' : '#f3f6fa',
+              fontWeight: activeTab === 'completed' ? 600 : 'normal',
+              backgroundColor: activeTab === 'completed' ? '#8ec6ff' : 'transparent',
+              borderRadius: 8
+            }}
+          >
+            Completed
+          </button>
+        </div>
 
-      <div className="project-todos">
-        <ToDoList todos={proj.todos} setTodos={setTodos} />
+        {/* Tab Content */}
+        <div className="tab-content" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {activeTab === 'notes' && (
+            <div className="project-notes" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div
+                style={{
+                  padding: '0.5em',
+                  background: '#2d313a',
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  marginBottom: '0.5em'
+                }}
+              >
+                Notes
+              </div>
+              <div
+                ref={notesEditorRef}
+                contentEditable
+                onInput={handleNotesChange}
+                style={{
+                  flex: 1,
+                  padding: '0.5em',
+                  minHeight: '100px',
+                  border: '1px solid #444',
+                  borderRadius: 8,
+                  background: '#23272f'
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'todos' && (
+            <div className="project-todos" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <ToDoList todos={proj.todos} setTodos={setTodos} />
+            </div>
+          )}
+
+          {activeTab === 'completed' && (
+            <div className="project-completed" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#23272f', borderRadius: 8, padding: '0.5em', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#2d313a', padding: '0.5em', borderRadius: 8, fontWeight: 600, marginBottom: '0.5em' }}>
+                <div>Completed Items</div>
+                <button
+                  onClick={() => {
+                    const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+                    setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+                    updateProject(proj.name, { todos: updatedTodos });
+                  }}
+                  style={{
+                    background: '#e57373',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 4,
+                    padding: '0.3em 0.8em',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Clear All
+                </button>
+              </div>
+              <ul style={{ margin: 0, padding: 0 }}>
+                {proj.todos
+                  .filter((todo: ToDoItem) => todo.completed)
+                  .map((todo: ToDoItem, idx: number) => (
+                    <li
+                      key={idx}
+                      style={{
+                        padding: '0.5em',
+                        borderBottom: '1px solid #3a3f4a',
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <span style={{ textDecoration: 'line-through', color: '#8ec6ff' }}>
+                        {todo.text}
+                      </span>
+                      <span style={{ fontSize: '0.8em', color: '#8ec6ff' }}>
+                        {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : ''}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

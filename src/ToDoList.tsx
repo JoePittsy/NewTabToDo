@@ -224,158 +224,44 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
           style={{ padding: '0.5em', width: '100%' }}
         />
       </form>
-      {/* Proportional flex container for lists */}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '0.5em' }}>
-        {/* Incomplete (to-do) list: 66% */}
-        <div style={{ flex: 2, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0 }}>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
-              <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
-                {incomplete.map((todo: ToDoItem, idx: number) => (
-                  <React.Fragment key={incompleteIds[idx]}>
-                    <SortableItem
-                      id={incompleteIds[idx]}
-                      className={todo.completed ? 'completed' : todo._animating ? 'animating' : ''}
-                      isCompleted={todo.completed}
-                      onTextClick={() => {
-                        if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
-                      }}
-                      style={{ userSelect: 'none' }}
-                      title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                    >
-                      <span
-                        style={{
-                          textDecoration: todo.completed || todo._animating ? 'line-through' : 'none',
-                          transition: 'text-decoration 0.2s',
-                          color: todo._animating ? '#8ec6ff' : undefined,
-                        }}
-                      >
-                        {todo.text}
-                      </span>
-                      <InfoLine
-                        createdOn={todo.createdOn}
-                        onDelete={() => handleDeleteTodo(todos.indexOf(todo))}
-                        showConfirm={confirmIdx === idx}
-                        setShowConfirm={v => setConfirmIdx(v ? idx : null)}
-                      />
-                    </SortableItem>
-                  </React.Fragment>
-                ))}
-              </SortableContext>
-            </DndContext>
-          </ul>
-        </div>
-        {/* Completed list: 33% */}
-        <div
-          style={{
-            flex: showCompleted ? 1 : 0.1,
-            minHeight: 0,
-            overflow: 'hidden',
-            flexDirection: 'column',
-            borderTop: '1px solid #444',
-            margin: '0',
-            paddingTop: '0.7em',
-            transition: 'flex 0.4s cubic-bezier(0.4,0,0.2,1)', // Smooth flex grow/shrink
-            display: 'flex',
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setShowCompleted(v => !v)}
-            aria-label={showCompleted ? 'Hide completed' : 'Show completed'}
-            style={{
-              background: '#2d313a',
-              color: '#8ec6ff',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '1em',
-              marginBottom: '0.5em',
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4em',
-              userSelect: 'none',
-              flexShrink: 0,
-              borderRadius: '8px',
-              width: '100%',
-            }}
-          >
-            <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: showCompleted ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-              ▶
-            </span>
-            Completed ({completed.length})
-            {completed.length > 0 && (
-              <span
-                title="Clear all completed to-dos"
-                style={{ marginLeft: 'auto', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', fontSize: '1.1em' }}
-                onClick={e => { e.stopPropagation(); setShowClearConfirm(true); }}
-                tabIndex={0}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setShowClearConfirm(true); } }}
-                aria-label="Clear all completed to-dos"
-                role="button"
-              >
-                <TrashIcon className="size-6 flex-none "
-                />
-              </span>
-            )}
-          </button>
-          {showCompleted && (
-            <ul className="todo-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto', opacity: 1, margin: 0, padding: 0, background: '#23272f', borderRadius: '8px' }}>
-              {completed.map((todo: ToDoItem, idx: number) => (
-                <li
-                  key={idx}
-                  onClick={() => handleToggle(todos.indexOf(todo))}
-                  style={{
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    borderBottom: '1px solid #3a3f4a'
-                  }}
-                  title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                >
-                  <span
-                    style={{
-                      textDecoration: todo.completed ? 'line-through' : 'none',
-                      overflowX: 'auto',
-                      whiteSpace: 'nowrap',
-                      textOverflow: 'ellipsis',
-                      display: 'inline-block',
-                      verticalAlign: 'middle',
-                      transition: 'all 0.2s',
-                      cursor: 'pointer',
-                      color: '#8ec6ff'
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#23272f', borderRadius: '8px', padding: '0.5em' }}>
+        <ul className="todo-list" style={{ margin: 0, padding: 0 }}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
+            <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
+              {incomplete.map((todo: ToDoItem, idx: number) => (
+                <React.Fragment key={incompleteIds[idx]}>
+                  <SortableItem
+                    id={incompleteIds[idx]}
+                    className={todo.completed ? 'completed' : todo._animating ? 'animating' : ''}
+                    isCompleted={todo.completed}
+                    onTextClick={() => {
+                      if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
                     }}
+                    style={{ userSelect: 'none' }}
+                    title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                   >
-                    {todo.text}
-                  </span>
-                  <span style={{ fontSize: '0.9em', color: '#8ec6ff', marginLeft: '1em', whiteSpace: 'nowrap', textDecoration: 'none' }}>
-                    {formatCompletedDate(todo.completedAt)}
-                  </span>
-                </li>
+                    <span
+                      style={{
+                        textDecoration: todo.completed || todo._animating ? 'line-through' : 'none',
+                        transition: 'text-decoration 0.2s',
+                        color: todo._animating ? '#8ec6ff' : undefined,
+                      }}
+                    >
+                      {todo.text}
+                    </span>
+                    <InfoLine
+                      createdOn={todo.createdOn}
+                      onDelete={() => handleDeleteTodo(todos.indexOf(todo))}
+                      showConfirm={confirmIdx === idx}
+                      setShowConfirm={v => setConfirmIdx(v ? idx : null)}
+                    />
+                  </SortableItem>
+                </React.Fragment>
               ))}
-            </ul>
-          )}
-        </div>
+            </SortableContext>
+          </DndContext>
+        </ul>
       </div>
-      {showClearConfirm && ReactDOM.createPortal(
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.45)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ background: '#23272f', borderRadius: 12, boxShadow: '0 8px 32px #000a', padding: '2em 2em 1.5em', minWidth: 320, textAlign: 'center', border: '2px solid #e57373' }}>
-            <div style={{ color: '#e57373', fontWeight: 700, fontSize: '1.1em', marginBottom: 16 }}>Clear all completed to-dos?</div>
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-              <button onClick={handleClearCompleted} style={{ background: '#e57373', color: '#fff', border: 'none', fontWeight: 700, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Clear</button>
-              <button onClick={() => setShowClearConfirm(false)} style={{ background: 'none', color: '#8ec6ff', border: '1.5px solid #8ec6ff', fontWeight: 600, fontSize: '1em', cursor: 'pointer', padding: '0.5em 1.5em', borderRadius: 6 }}>Cancel</button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 };
