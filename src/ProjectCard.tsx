@@ -172,7 +172,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     <div className="project-card">
       <div className="project-header">
         {proj.logo ? (
-          <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" />
+          <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{objectFit: 'cover'}} />
         ) : (
           <div
             className="project-logo"
@@ -186,7 +186,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               fontSize: '1.8em',
               border: '1px solid #e0e0e0',
               boxShadow: '0 1px 4px #0002',
-              borderRadius: 6,
+              borderRadius: '0.5em',
+              width: '56px',
+              height: '56px',
+              minWidth: '56px',
+              minHeight: '56px',
+              maxWidth: '56px',
+              maxHeight: '56px',
+              aspectRatio: '1 / 1',
             }}
           >
             {proj.name.charAt(0).toUpperCase()}
@@ -539,17 +546,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         <div className="tab-content" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {activeTab === 'notes' && (
             <div className="project-notes" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div
-                style={{
-                  padding: '0.5em',
-                  background: '#2d313a',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  marginBottom: '0.5em'
-                }}
-              >
-                Notes
-              </div>
               <div
                 ref={notesEditorRef}
                 contentEditable
