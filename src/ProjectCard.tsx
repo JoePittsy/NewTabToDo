@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import pinSvg from './assets/pin.svg';
+import unpinSvg from './assets/unpin.svg';
 import ReactDOM from 'react-dom';
 import ToDoList, { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
@@ -216,7 +218,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               className={`project-header-btn${proj.pinned ? ' pinned' : ''}`}
               tabIndex={0}
             >
-              {proj.pinned ? '📌' : '📍'}
+              {proj.pinned ? (
+                <img src={unpinSvg} alt="Pinned" style={{ width: 22, height: 22, verticalAlign: 'middle' }} />
+              ) : (
+                <img src={pinSvg} alt="Unpinned" style={{ width: 22, height: 22, verticalAlign: 'middle' }} />
+              )}
             </button>
             <button
               aria-label="Project menu"
@@ -408,11 +414,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
 
           {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
-          <div className='flex-1 overflow-scroll'>
+          <div className='flex-1 overflow-scroll'
+            style={{backgroundColor: '#1d232a', borderBottomLeftRadius: '0.8em', borderBottomRightRadius: '0.8em', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%',border: '1px solid #181b20', borderTop: 'none' }}>
 
             {/* To Do Tab */}
             <div
-              className="contents bg-base-100"
+              className="contents"
               style={{
                 display: activeTab === 'todos' ? 'block' : 'none',
               }}
@@ -429,49 +436,45 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
             {/* Completed Tab */}
             <div
+              // className="contents"
               className="contents"
               style={{
                 display: activeTab === 'completed' ? 'block' : 'none',
-             
               }}
             > 
             
               <div className="project-todos pt-4" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <button
+                    onClick={() => {
+                      const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+                      setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+                      updateProject(proj.name, { todos: updatedTodos });
+                    }}
+                    className="clear-all-btn"
+                    style={{ margin: 'auto' }}
+                  >
+                  Clear All
+                  </button>
                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-
                   {/* Added a flag, this renders only completed todos with input bar */}
                   <ToDoList todos={proj.todos} setTodos={setTodos} showOnlyCompleted />
                 </div>
               </div>
 
-              <button
-             onClick={() => {
-               const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
-               setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
-               updateProject(proj.name, { todos: updatedTodos });
-             }}
-             className="clear-all-btn"
-             style={{ position: 'absolute', bottom: '1em', right: '1em' }}
-           >
-             Clear All
-           </button>
+              
 
             </div>
 
 
             {/* Notes Tab */}
             <div
-              className="tab-content  p-6"
+              className="contents"
               style={{
                 display: activeTab === 'notes' ? 'block' : 'none',
-                flex: 1,
-                minHeight: 0,
                 height: '100%',
-                borderTop: 'none',
-                borderRadius: '0 0 1em 1em',
               }}
             >
-              <div style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' , padding: '0.5em' }}>
 
                 <textarea
                   value={notesValue}
@@ -490,12 +493,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                   className="project-notes-editor"
                   style={{ height: '100%', resize: 'none' }}
                 />
-
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
   );
