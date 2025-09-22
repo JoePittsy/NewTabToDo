@@ -26,12 +26,15 @@ export interface ToDoItem {
   _animating?: boolean;
 }
 
+
 interface ToDoListProps {
   todos: ToDoItem[];
   setTodos: (todos: ToDoItem[]) => void;
+  showOnlyCompleted?: boolean;
 }
 
-const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
+
+const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted = false }) => {
   const [newTodo, setNewTodo] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
   const [now, setNow] = useState(Date.now());
@@ -99,6 +102,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
     }
   };
 
+
   // For incomplete, sort by order ascending
   const incomplete = todos.filter((t: ToDoItem) => !t.completed).sort((a: ToDoItem, b: ToDoItem) => (a.order ?? 0) - (b.order ?? 0));
   const completed = todos.filter((t: ToDoItem) => t.completed).sort((a: ToDoItem, b: ToDoItem) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
@@ -107,6 +111,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
     // Use a stable unique id for each todo, e.g. based on text + order
     return `${todo.text}__${todo.order ?? 0}`;
   });
+  const completedIds = completed.map((todo: ToDoItem) => `${todo.text}__${todo.completedAt ?? 0}`);
 
   function formatCompletedDate(completedAt?: number): string | null {
     if (!completedAt) return null;
@@ -213,62 +218,99 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos }) => {
     setShowClearConfirm(false);
   }
 
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <form onSubmit={handleAdd} style={{ marginBottom: '1em', display: 'flex', gap: '0.5em', flexShrink: 0 }}>
-        <input
-          type="text"
-          value={newTodo}
-          onChange={e => setNewTodo(e.target.value)}
-          placeholder="Add a new to-do..."
-          style={{ padding: '0.5em', width: '100%' }}
-        />
-      </form>
+      {/* Only show input if not completed-only view */}
+      {!showOnlyCompleted && (
+        <form onSubmit={handleAdd} style={{ marginBottom: '1em', display: 'flex', gap: '0.5em', flexShrink: 0 }}>
+          <input
+            type="text"
+            value={newTodo}
+            onChange={e => setNewTodo(e.target.value)}
+            placeholder="Add a new to-do..."
+            style={{ padding: '0.5em', width: '100%' }}
+          />
+        </form>
+      )}
       <div
-  style={{
-    flex: 1,
-    minHeight: 0, // important when using flex layouts
-    maxHeight: "400px", // set the height limit (adjust as needed)
-    overflowY: "auto",
-    background: "#23272f",
-    borderRadius: "8px",
-    padding: "0.5em",
-    }}>
+        style={{
+          flex: 1,
+          minHeight: 0,
+          maxHeight: "auto",
+          overflowY: "auto",
+          background: "#23272f",
+          borderRadius: "8px",
+          padding: "0.5em",
+        }}>
         <ul className="todo-list" style={{ margin: 0, padding: 0 }}>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
-            <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
-              {incomplete.map((todo: ToDoItem, idx: number) => (
-                <React.Fragment key={incompleteIds[idx]}>
-                  <SortableItem
-                    id={incompleteIds[idx]}
-                    className={todo.completed ? 'completed' : todo._animating ? 'animating' : ''}
-                    isCompleted={todo.completed}
-                    onTextClick={() => {
-                      if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
-                    }}
-                    style={{ userSelect: 'none' }}
-                    title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                  >
-                    <span
-                      style={{
-                        textDecoration: todo.completed || todo._animating ? 'line-through' : 'none',
-                        transition: 'text-decoration 0.2s',
-                        color: todo._animating ? '#8ec6ff' : undefined,
+          {/* Show incomplete or completed based on prop */}
+          {!showOnlyCompleted ? (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} >
+              <SortableContext items={incompleteIds} strategy={verticalListSortingStrategy}>
+                {incomplete.map((todo: ToDoItem, idx: number) => (
+                  <React.Fragment key={incompleteIds[idx]}>
+                    <SortableItem
+                      id={incompleteIds[idx]}
+                      className={todo.completed ? 'completed' : todo._animating ? 'animating' : ''}
+                      isCompleted={todo.completed}
+                      onTextClick={() => {
+                        if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
                       }}
+                      style={{ userSelect: 'none' }}
+                      title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                     >
-                      {todo.text}
-                    </span>
-                    <InfoLine
-                      createdOn={todo.createdOn}
-                      onDelete={() => handleDeleteTodo(todos.indexOf(todo))}
-                      showConfirm={confirmIdx === idx}
-                      setShowConfirm={v => setConfirmIdx(v ? idx : null)}
-                    />
-                  </SortableItem>
-                </React.Fragment>
-              ))}
-            </SortableContext>
-          </DndContext>
+                      <span
+                        style={{
+                          textDecoration: todo.completed || todo._animating ? 'line-through' : 'none',
+                          transition: 'text-decoration 0.2s',
+                          color: todo._animating ? '#8ec6ff' : undefined,
+                        }}
+                      >
+                        {todo.text}
+                      </span>
+                      <InfoLine
+                        createdOn={todo.createdOn}
+                        onDelete={() => handleDeleteTodo(todos.indexOf(todo))}
+                        showConfirm={confirmIdx === idx}
+                        setShowConfirm={v => setConfirmIdx(v ? idx : null)}
+                      />
+                    </SortableItem>
+                  </React.Fragment>
+                ))}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            completed.map((todo: ToDoItem, idx: number) => (
+              <li
+                key={completedIds[idx]}
+                className={todo.completed ? 'completed' : ''}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  opacity: 1,
+                  cursor: 'pointer',
+                  padding: '0.5em 0',
+                  borderBottom: '1px solid #2c3440',
+                }}
+                onClick={() => handleToggle(todos.indexOf(todo))}
+                title="Mark as incomplete"
+              >
+                <span
+                  style={{
+                    textDecoration: 'line-through',
+                    color: '#8ec6ff',
+                    flex: 1,
+                  }}
+                >
+                  {todo.text}
+                </span>
+                <span style={{ fontSize: '0.8em', color: '#8ec6ff', marginLeft: 8 }}>
+                  {formatCompletedDate(todo.completedAt)}
+                </span>
+              </li>
+            ))
+          )}
         </ul>
       </div>
     </div>
