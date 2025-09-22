@@ -130,7 +130,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         createdOn: todo.createdOn
       }))
     };
-    
+
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
@@ -154,11 +154,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   const handleNotesChange = (e: React.FormEvent<HTMLDivElement>) => {
     const newValue = e.currentTarget.innerHTML;
     setNotesValue(newValue);
-    
+
     if (notesSaveHandle.current) {
       clearTimeout(notesSaveHandle.current);
     }
-    
+
     notesSaveHandle.current = setTimeout(() => {
       setProj((prev: any) => {
         const updated = { ...prev, notes: newValue };
@@ -170,10 +170,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
   return (
     <div className="project-card">
-     {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
+      {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
       <div className="project-header">
         {proj.logo ? (
-          <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{objectFit: 'cover'}} />
+          <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{ objectFit: 'cover' }} />
         ) : (
           <div
             className="project-logo"
@@ -262,8 +262,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         </ContexifyItem>
       </ContexifyMenu>
 
-  <div className='icon-links'>
-  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className='icon-links'>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <button
             onClick={openAllLinks}
             className="icon-link"
@@ -370,123 +370,134 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         })}
       </div>
 
-      <div className="project-body" style={{ display: 'flex', flexDirection: 'column', gap: '1em', marginTop: '0.5em', flex: 1 }}>
         {/* Tab Navigation */}
-  {/* DaisyUI tabs-lift with tab-content, unique name per project */}
-  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%' }}>
-    <div className="tabs tabs-lift project-tabs-group" style={{ marginBottom: 0 }}>
-      <input
-        type="radio"
-        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-        className="tab project-tab"
-        aria-label="ToDo"
-        checked={activeTab === 'todos'}
-        onChange={() => setActiveTab('todos')}
-        tabIndex={0}
-      />
-      <input
-        type="radio"
-        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-        className="tab project-tab"
-        aria-label="Completed"
-        checked={activeTab === 'completed'}
-        onChange={() => setActiveTab('completed')}
-        tabIndex={0}
-      />
-      <input
-        type="radio"
-        name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-        className="tab project-tab"
-        aria-label="Notes"
-        checked={activeTab === 'notes'}
-        onChange={() => setActiveTab('notes')}
-        tabIndex={0}
-      />
-    </div>
-    {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
-    <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <div
-        className="tab-content bg-base-100 border-base-300 p-6"
-        style={{
-          display: activeTab === 'todos' ? 'block' : 'none',
-          flex: 1,
-          minHeight: 0,
-          height: '100%',
-          borderTop: 'none',
-          borderRadius: '0 0 1em 1em',
-        }}
-      >
-        <div className="project-todos" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <ToDoList todos={proj.todos} setTodos={setTodos} />
+        {/* DaisyUI tabs-lift with tab-content, unique name per project */}
+
+
+        <div className='flex flex-col h-full overflow-hidden'>
+          
+          {/* Radio Buttons */}
+          <div className="tabs tabs-lift project-tabs-group" style={{ marginBottom: 0 }}>
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="ToDo"
+              checked={activeTab === 'todos'}
+              onChange={() => setActiveTab('todos')}
+              tabIndex={0}
+            />
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="Completed"
+              checked={activeTab === 'completed'}
+              onChange={() => setActiveTab('completed')}
+              tabIndex={0}
+            />
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="Notes"
+              checked={activeTab === 'notes'}
+              onChange={() => setActiveTab('notes')}
+              tabIndex={0}
+            />
+          </div>
+
+          {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
+          <div className='flex-1 overflow-scroll'>
+
+            {/* To Do Tab */}
+            <div
+              className="contents bg-base-100"
+              style={{
+                display: activeTab === 'todos' ? 'block' : 'none',
+              }}
+            >
+              <div className="project-todos pt-4" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+
+                  <ToDoList todos={proj.todos} setTodos={setTodos} />
+
+                </div>
+              </div>
+
+            </div>
+
+            {/* Completed Tab */}
+            <div
+              className="contents"
+              style={{
+                display: activeTab === 'completed' ? 'block' : 'none',
+             
+              }}
+            > 
+            
+              <div className="project-todos pt-4" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+
+                  {/* Added a flag, this renders only completed todos with input bar */}
+                  <ToDoList todos={proj.todos} setTodos={setTodos} showOnlyCompleted />
+                </div>
+              </div>
+
+              <button
+             onClick={() => {
+               const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+               setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+               updateProject(proj.name, { todos: updatedTodos });
+             }}
+             className="clear-all-btn"
+             style={{ position: 'absolute', bottom: '1em', right: '1em' }}
+           >
+             Clear All
+           </button>
+
+            </div>
+
+
+            {/* Notes Tab */}
+            <div
+              className="tab-content  p-6"
+              style={{
+                display: activeTab === 'notes' ? 'block' : 'none',
+                flex: 1,
+                minHeight: 0,
+                height: '100%',
+                borderTop: 'none',
+                borderRadius: '0 0 1em 1em',
+              }}
+            >
+              <div style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+
+                <textarea
+                  value={notesValue}
+                  onChange={e => {
+                    setNotesValue(e.target.value);
+                    if (notesSaveHandle.current) clearTimeout(notesSaveHandle.current);
+                    notesSaveHandle.current = setTimeout(() => {
+                      setProj(prev => {
+                        const updated = { ...prev, notes: e.target.value };
+                        updateProject(prev.name, updated);
+                        return updated;
+                      });
+                    }, 500);
+                  }}
+
+                  className="project-notes-editor"
+                  style={{ height: '100%', resize: 'none' }}
+                />
+
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
-      <div
-        className="tab-content bg-base-100 border-base-300 p-6"
-        style={{
-          display: activeTab === 'completed' ? 'block' : 'none',
-          flex: 1,
-          minHeight: 0,
-          height: '100%',
-          borderTop: 'none',
-          borderRadius: '0 0 1em 1em',
-        }}
-      >
-        <div className="project-completed" style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
-          <ul className="completed-list" style={{ flex: 1 }}>
-            {proj.todos
-              .filter((todo: ToDoItem) => todo.completed)
-              .map((todo: ToDoItem, idx: number) => (
-                <li
-                  key={idx}
-                  className="completed-list-item"
-                >
-                  <span className="completed-text">
-                    {todo.text}
-                  </span>
-                  <span className="completed-date">
-                    {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : ''}
-                  </span>
-                </li>
-              ))}
-          </ul>
-          <button
-            onClick={() => {
-              const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
-              setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
-              updateProject(proj.name, { todos: updatedTodos });
-            }}
-            className="clear-all-btn"
-            style={{ position: 'absolute', bottom: '1em', right: '1em' }}
-          >
-            Clear All
-          </button>
-        </div>
-      </div>
-      <div
-        className="tab-content bg-base-100 border-base-300 p-6"
-        style={{
-          display: activeTab === 'notes' ? 'block' : 'none',
-          flex: 1,
-          minHeight: 0,
-          height: '100%',
-          borderTop: 'none',
-          borderRadius: '0 0 1em 1em',
-        }}
-      >
-        <div className="project-notes" style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div
-            ref={notesEditorRef}
-            contentEditable
-            onInput={handleNotesChange}
-            className="project-notes-editor"
-            style={{ height: '100%' }}
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-      </div>
-    </div>
   );
 };
 
@@ -535,7 +546,7 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
           )}
         </>
       ) : (
-        link.url ? <a href={formatLink(projectName??'', link.url)} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
+        link.url ? <a href={formatLink(projectName ?? '', link.url)} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
       )}
     </li>
   );
@@ -548,7 +559,7 @@ const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({
     {links.map((link, idx) => {
       if (link.url && (!link.children || link.children.length === 0)) {
         return (
-          <ContexifyItem key={idx} onClick={() => window.open(formatLink(projectName??'', link.url??''), '_blank')}>
+          <ContexifyItem key={idx} onClick={() => window.open(formatLink(projectName ?? '', link.url ?? ''), '_blank')}>
             {link.label}
           </ContexifyItem>
         );
