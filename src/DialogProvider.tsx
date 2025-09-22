@@ -1,8 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import ReactDOM from 'react-dom';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import ReactDOM from "react-dom";
+
+interface DialogEntry {
+  key: number;
+  render: () => React.ReactNode;
+}
 
 interface DialogContextType {
-  openDialog: (content: React.ReactNode) => void;
+  openDialog: (render: () => React.ReactNode) => void;
   closeDialog: () => void;
   isOpen: boolean;
 }
@@ -11,41 +16,67 @@ const DialogContext = createContext<DialogContextType | null>(null);
 
 export const useDialog = () => {
   const ctx = useContext(DialogContext);
-  if (!ctx) throw new Error('useDialog must be used within a DialogProvider');
+  if (!ctx) throw new Error("useDialog must be used within a DialogProvider");
   return ctx;
 };
 
-export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [dialogContent, setDialogContent] = useState<React.ReactNode>(null);
-  const isOpen = dialogContent !== null;
+let _id = 0;
+export const DialogProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [dialogStack, setDialogStack] = useState<DialogEntry[]>([]);
+  const isOpen = dialogStack.length > 0;
 
-  const openDialog = (content: React.ReactNode) => setDialogContent(content);
-  const closeDialog = () => setDialogContent(null);
+  const openDialog = (render: () => React.ReactNode) =>
+    setDialogStack((prev) => [...prev, { key: ++_id, render }]);
+
+  const closeDialog = () => setDialogStack((prev) => prev.slice(0, -1));
 
   return (
     <DialogContext.Provider value={{ openDialog, closeDialog, isOpen }}>
       {children}
-      {isOpen && ReactDOM.createPortal(
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.45)',
-          zIndex: 20000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-          onClick={closeDialog}
-        >
-          <div style={{ minWidth: 340, background: '#23272f', borderRadius: 12, boxShadow: '0 8px 32px #000a', padding: '2em 2em 1.5em', position: 'relative' }} onClick={e => e.stopPropagation()}>
-            {dialogContent}
-          </div>
-        </div>,
-        document.body
-      )}
+
+      {dialogStack.map((entry, idx) => {
+        const isTop = idx === dialogStack.length - 1;
+
+        return ReactDOM.createPortal(
+          <div
+            key={entry.key}
+            style={{
+              position: "fixed",
+              inset: 0,
+              // Only the topmost layer shows the dimmed backdrop
+              background: isTop ? "rgba(0,0,0,0.45)" : "transparent",
+              zIndex: 20000 + idx,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              // Only the topmost layer should receive pointer events
+              pointerEvents: isTop ? "auto" : "none",
+            }}
+            // Only the topmost backdrop should close the dialog
+            onClick={isTop ? closeDialog : undefined}
+          >
+            <div
+              style={{
+                minWidth: 340,
+                background: "#23272f",
+                borderRadius: 12,
+                boxShadow: "0 8px 32px #000a",
+                padding: "2em 2em 1.5em",
+                position: "relative",
+                // Keep underlying dialogs mounted but non-interactive & out of a11y
+                // (visibility hidden still keeps it mounted)
+              }}
+              onClick={(e) => e.stopPropagation()}
+              aria-hidden={!isTop}
+            >
+              {entry.render()}
+            </div>
+          </div>,
+          document.body
+        );
+      })}
     </DialogContext.Provider>
   );
 };
