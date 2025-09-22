@@ -34,7 +34,7 @@ export class DropboxBackupService implements CloudBackupService {
 
     localStorage.setItem("dropbox_code_verifier", codeVerifier);
 
-    const clientId = "yj55ji2tb6o3bx2"; // TODO: replace with your Dropbox App Key
+    const clientId = "yj55ji2tb6o3bx2";
     // Redirect specifically to /dropbox_auth route so we can handle callback there
     const redirectUri = window.location.origin + "/dropbox_auth";
 

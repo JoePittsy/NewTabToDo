@@ -57,23 +57,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
   useEffect(() => {}, []);
 
-  const handleDropboxConnect = async () => {
-    try {
-      const svc = new DropboxBackupService();
-      await svc.authenticate();
-    } catch (err) {
-      alert(
-        "Failed to connect Dropbox: " +
-          (err instanceof Error ? err.message : String(err))
-      );
-    }
-  };
-
-  const handleDropboxDisconnect = () => {
-    const svc = new DropboxBackupService();
-    svc.disconnect();
-  };
-
   const onSave = async () => {
     if (!draft) return onClose();
     await updateSettings(draft);
