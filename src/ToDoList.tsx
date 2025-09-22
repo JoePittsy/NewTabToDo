@@ -229,7 +229,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
             value={newTodo}
             onChange={e => setNewTodo(e.target.value)}
             placeholder="Add a new to-do..."
-            style={{ padding: '0.5em', width: '100%' }}
+            style={{ padding: '0.5em', width: '100%', marginLeft: '4px', marginRight: '4px' }}
           />
         </form>
       )}
@@ -239,7 +239,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
           minHeight: 0,
           maxHeight: "auto",
           overflowY: "auto",
-          background: "#23272f",
+          // background: "#23272f",
           borderRadius: "8px",
           padding: "0.5em",
         }}>

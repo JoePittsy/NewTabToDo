@@ -1,4 +1,7 @@
 /* ProjectCard DaisyUI tab customizations */
+.contents {
+  background-color: #1d232a;
+}
 .project-tabs-group {
   width: 100%;
   margin-bottom: 0.5em;
