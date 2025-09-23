@@ -29,9 +29,25 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
 
   const [name, setName] = useState(project.name);
   const [logo, setLogo] = useState(project.logo);
+  const [logoBackgroundColor, setLogoBackgroundColor] = useState(project.logoBackgroundColor || '#6c757d');
   const [logoPreview, setLogoPreview] = useState(project.logo);
   const [links, setLinks] = useState<any[]>(project.quickLinks || []);
   const [iconLinks, setIconLinks] = useState(project.iconLinks || []);
+
+  // Handler to update icon link color and remove favicon if color is set
+  function handleIconLinkColorChange(index: number, color: string) {
+    setIconLinks(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        color,
+        // Remove favicon if color is set
+        iconType: color ? 'color' : updated[index].iconType,
+        icon: color ? '' : updated[index].icon
+      };
+      return updated;
+    });
+  }
   const [activeTab, setActiveTab] = useState<string>('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -52,7 +68,13 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
   // Only run on mount, not on every render
   React.useEffect(() => {
     setLinks(ensureIds(JSON.parse(JSON.stringify(project.quickLinks || []))));
-    setIconLinks(JSON.parse(JSON.stringify(project.iconLinks || [])));
+    // Add default iconType to existing iconLinks
+    const iconLinksCopy = JSON.parse(JSON.stringify(project.iconLinks || []));
+    const iconLinksWithDefault = iconLinksCopy.map((link: any) => ({
+      ...link,
+      iconType: link.iconType || 'favicon'
+    }));
+    setIconLinks(iconLinksWithDefault);
     // eslint-disable-next-line
   }, [project]); // Only run once on mount
 
@@ -130,6 +152,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
           ...project,
           name,
           logo,
+          logoBackgroundColor,
           quickLinks: JSON.parse(JSON.stringify(links)),
           iconLinks: JSON.parse(JSON.stringify(iconLinks)),
         });
@@ -151,19 +174,59 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
               required
             />
           </label>
-          <label style={{ fontWeight: 500 }}>
-            Logo
-            <br />
+          <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+            <label style={{ fontWeight: 500, flex: 1 }}>
+              Logo
+              <br />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                style={{ marginTop: 6, width: '100%' }}
+              />
+            </label>
+            {logoPreview && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLogo('');
+                  setLogoPreview('');
+                }}
+                style={{
+                  background: '#e57373',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '0.5em 1em',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  alignSelf: 'flex-end',
+                  marginBottom: '0.3em'
+                }}
+              >
+                Clear Logo
+              </button>
+            )}
+          </div>
+          <label style={{ fontWeight: 500, marginTop: '1em' }}>
+            Logo Background Color
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogoChange}
-              style={{ marginTop: 6 }}
+              type="color"
+              value={logoBackgroundColor}
+              onChange={e => setLogoBackgroundColor(e.target.value)}
+              style={{ width: '100%', marginTop: 6, padding: '0.5em', borderRadius: 6, border: '1px solid #2d313a', background: '#181b20', color: '#f3f6fa' }}
             />
           </label>
-          {logoPreview && (
-            <img src={logoPreview} alt="Preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'contain', background: '#fff', border: '1px solid #e0e0e0', margin: '0 auto' }} />
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1em' }}>
+            {logoPreview ? (
+              <img src={logoPreview} alt="Preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'contain', background: '#fff', border: '1px solid #e0e0e0' }} />
+            ) : (
+              <div style={{ width: 56, height: 56, borderRadius: 8, background: logoBackgroundColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8em', fontWeight: 'bold', color: '#fff' }}>
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div style={{ marginTop: '0.5em', fontSize: '0.9em' }}>Preview</div>
+          </div>
         </>
       )}
       {activeTab === 'links' && (

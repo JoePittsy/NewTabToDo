@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import pinSvg from './assets/pin.svg';
+import unpinSvg from './assets/unpin.svg';
 import ReactDOM from 'react-dom';
 import ToDoList, { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './Edit Project/EditProjectDialog';
-import { useProjects, deepCloneProject, Project } from './ProjectsProvider';
+import { useProjects, deepCloneProject, Project, AccordionState } from './ProjectsProvider';
 import {
   Menu as ContexifyMenu,
   Item as ContexifyItem,
@@ -21,41 +23,75 @@ export interface QuickLink {
   children?: QuickLink[];
 }
 
-
-
 interface ProjectCardProps {
   project: Project;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
+const computeAccordionState = (project: Project): AccordionState => {
+  if (project.accordionState) {
+    return {
+      notesCollapsed: project.accordionState.notesCollapsed ?? false,
+      todosCollapsed: project.accordionState.todosCollapsed ?? false,
+    };
+  }
+
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches) {
+    return { notesCollapsed: true, todosCollapsed: true };
+  }
+
+  return { notesCollapsed: false, todosCollapsed: false };
+};
+
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) => {
   const dialog = useDialog();
   const { updateProject, deleteProject, closeProject, openProject } = useProjects();
-  // Always deep clone project for local state to avoid shared references
   const [proj, setProj] = useState(() => deepCloneProject(project));
+  const [notesValue, setNotesValue] = useState(() => project.notes ?? '');
+  const [accordionState, setAccordionState] = useState<AccordionState>(() => computeAccordionState(project));
+  const [activeTab, setActiveTab] = useState<'notes' | 'todos' | 'completed'>('todos');
+  const notesSaveHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notesEditorRef = useRef<HTMLDivElement | null>(null);
+  const projectNameRef = useRef(proj.name);
   const MENU_ID = React.useId ? React.useId() : `project-card-menu-${project.name}`;
   const { show: showMenu } = useContexifyContextMenu({ id: MENU_ID });
 
   const formatLink = useFormatLink();
 
-  // Sync local state with prop changes, always deep clone
+  // Sync local state with prop changes
   React.useEffect(() => {
-    setProj(deepCloneProject(project));
+    if (notesSaveHandle.current) {
+      clearTimeout(notesSaveHandle.current);
+      notesSaveHandle.current = null;
+    }
+
+    const cloned = deepCloneProject(project);
+    setProj(cloned);
+    setNotesValue(cloned.notes ?? '');
+    setAccordionState(computeAccordionState(cloned));
   }, [project]);
 
+  React.useEffect(() => {
+    projectNameRef.current = proj.name;
+  }, [proj.name]);
+
+  React.useEffect(() => {
+    if (notesEditorRef.current && notesEditorRef.current.innerHTML !== notesValue) {
+      notesEditorRef.current.innerHTML = notesValue;
+    }
+  }, [notesValue]);
+
   function handleEdit() {
-    // Always pass a deep clone of the current project to the dialog
-    dialog.openDialog(
+    dialog.openDialog( () => 
       <EditProjectDialog
         project={deepCloneProject(proj)}
         onSave={updatedProject => {
           if (updatedProject.name === '__DELETE__') {
             deleteProject(proj.name);
             dialog.closeDialog();
-            window.location.reload(); // Or trigger parent state update if needed
+            window.location.reload();
             return;
           }
-          // If the project was renamed, update open projects list as well
           if (updatedProject.name !== proj.name) {
             updateProject(proj.name, updatedProject);
             setProj(updatedProject);
@@ -80,22 +116,117 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     closeProject(proj.name);
   }
 
-  // Add setTodos function to update todos in context and local state
   const setTodos = (todos: ToDoItem[]) => {
-    setProj((p: typeof proj) => ({ ...p, todos: JSON.parse(JSON.stringify(todos)) }));
+    setProj((p: Project) => ({ ...p, todos: JSON.parse(JSON.stringify(todos)) }));
     updateProject(proj.name, { todos: JSON.parse(JSON.stringify(todos)) });
+  };
+
+  const handleExport = () => {
+    const projectData = {
+      ...proj,
+      // Omit internal state properties
+      todos: proj.todos.map(todo => ({
+        text: todo.text,
+        completed: todo.completed,
+        completedAt: todo.completedAt,
+        createdOn: todo.createdOn
+      }))
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `${proj.name.replace(/[^a-z0-9]/gi, '_')}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  // Open all links in the project
+  const openAllLinks = () => {
+    if (!proj.iconLinks) return;
+    proj.iconLinks.forEach((link: any) => {
+      if (link.link) {
+        window.open(formatLink(proj.name, link.link), '_blank');
+      }
+    });
+  };
+
+  // Handle notes changes with debounce
+  const handleNotesChange = (e: React.FormEvent<HTMLDivElement>) => {
+    const newValue = e.currentTarget.innerHTML;
+    setNotesValue(newValue);
+
+    if (notesSaveHandle.current) {
+      clearTimeout(notesSaveHandle.current);
+    }
+
+    notesSaveHandle.current = setTimeout(() => {
+      setProj((prev: Project) => {
+        const updated = { ...prev, notes: newValue };
+        updateProject(prev.name, updated);
+        return updated;
+      });
+    }, 500);
   };
 
   return (
     <div className="project-card">
+      {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
       <div className="project-header">
-        <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" />
+        {proj.logo ? (
+          <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{ objectFit: 'cover' }} />
+        ) : (
+          <div
+            className="project-logo"
+            style={{
+              background: proj.logoBackgroundColor || '#6c757d',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+              fontSize: '1.8em',
+              border: '1px solid #e0e0e0',
+              boxShadow: '0 1px 4px #0002',
+              borderRadius: '0.5em',
+              width: '56px',
+              height: '56px',
+              minWidth: '56px',
+              minHeight: '56px',
+              maxWidth: '56px',
+              maxHeight: '56px',
+              aspectRatio: '1 / 1',
+            }}
+          >
+            {proj.name.charAt(0).toUpperCase()}
+          </div>
+        )}
         <div className="project-title-row" style={{ display: 'flex', alignItems: 'center', gap: '1.2em', justifyContent: 'space-between', width: '100%' }}>
-          <h2 className="project-name" style={{ margin: 0 }}>{proj.name}</h2>
+          <h2 className="project-name">{proj.name}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
             <button
+              aria-label={proj.pinned ? "Unpin project" : "Pin project"}
+              onClick={e => {
+                e.stopPropagation();
+                setProj(prev => {
+                  const updated = { ...prev, pinned: !prev.pinned };
+                  updateProject(proj.name, updated);
+                  return updated;
+                });
+              }}
+              className={`project-header-btn${proj.pinned ? ' pinned' : ''}`}
+              tabIndex={0}
+            >
+              {proj.pinned ? (
+                <img src={unpinSvg} alt="Pinned" style={{ width: 22, height: 22, verticalAlign: 'middle' }} />
+              ) : (
+                <img src={pinSvg} alt="Unpinned" style={{ width: 22, height: 22, verticalAlign: 'middle' }} />
+              )}
+            </button>
+            <button
               aria-label="Project menu"
-              style={{ background: 'none', border: 'none', color: '#8ec6ff', fontSize: '1.6em', cursor: 'pointer', padding: '0 0.1em', borderRadius: 6, marginRight: 0 }}
+              className="project-header-btn"
               onClick={e => {
                 e.stopPropagation();
                 showMenu({ event: e });
@@ -111,7 +242,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             {dragHandleProps && (
               <button
                 aria-label="Drag to reorder"
-                style={{ background: 'none', border: 'none', color: '#8ec6ff', fontSize: '1.6em', cursor: 'grab', padding: '0 0.1em', borderRadius: 6, marginLeft: 0 }}
+                className="project-header-btn drag"
                 {...dragHandleProps}
                 tabIndex={0}
               >
@@ -121,7 +252,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
         </div>
       </div>
-      {/* Contextify Menu */}
       <ContexifyMenu id={MENU_ID} animation="fade">
         <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}>
           <QuickLinksMenu links={proj.quickLinks} projectName={proj.name} />
@@ -133,11 +263,74 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         <ContexifyItem onClick={handleClose}>
           Close Project
         </ContexifyItem>
+        <ContexifyItem onClick={handleExport}>
+          Export Project
+        </ContexifyItem>
       </ContexifyMenu>
 
-      <div className='icon-links' style={{ height: '56px', padding: '0.25rem', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className='icon-links'>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button
+            onClick={openAllLinks}
+            className="icon-link"
+            tabIndex={0}
+            aria-describedby={`all-links-tooltip-${proj.name}`}
+            onMouseEnter={e => {
+              const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
+              if (tooltip) tooltip.style.opacity = '1';
+            }}
+            onMouseLeave={e => {
+              const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
+              if (tooltip) tooltip.style.opacity = '0';
+            }}
+            onFocus={e => {
+              const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
+              if (tooltip) tooltip.style.opacity = '1';
+            }}
+            onBlur={e => {
+              const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
+              if (tooltip) tooltip.style.opacity = '0';
+            }}
+          >
+            <span style={{ fontSize: '1.8em' }}>🔗</span>
+          </button>
+          <span
+            id={`all-links-tooltip-${proj.name}`}
+            className="icon-tooltip"
+            role="tooltip"
+          >
+            Open all links
+          </span>
+        </div>
+
         {proj.iconLinks?.map((link, idx) => {
           const tooltipId = `icon-link-tooltip-${proj.name.replace(/\s+/g, '-')}-${idx}`;
+          let displayContent;
+          if (link.icon) {
+            displayContent = (
+              <img
+                src={link.icon}
+                alt={link.title || 'Icon'}
+                className="icon-link-img"
+                onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
+                onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+              />
+            );
+          } else {
+            const displayText = link.text || (link.title ? link.title.charAt(0) : link.link.split('/')[2]?.charAt(0) || '?');
+            // Use link.color if iconType is 'color', else fallback to project color or default
+            const bgColor = link.iconType === 'color' && link.color ? link.color : (proj.logoBackgroundColor || '#6c757d');
+            displayContent = (
+              <div
+                className="icon-link-text"
+                style={{ background: bgColor, color: '#fff' }}
+                onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
+                onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                {displayText.charAt(0).toUpperCase()}
+              </div>
+            );
+          }
           return (
             <div key={idx} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <a
@@ -147,23 +340,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 className="icon-link"
                 tabIndex={0}
                 aria-describedby={tooltipId}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  minWidth: 44,
-                  minHeight: 44,
-                  borderRadius: 8,
-                  transition: 'background 0.15s',
-                  padding: 4,
-                  background: 'none',
-                  border: 'none',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     window.open(formatLink(project.name, link.link), '_blank')
@@ -186,65 +362,145 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                   if (tooltip) tooltip.style.opacity = '0';
                 }}
               >
-                <img
-                  src={link.icon}
-                  alt={link.title || 'Icon'}
-                  style={{
-                    height: 32,
-                    width: 32,
-                    objectFit: 'contain',
-                    borderRadius: 6,
-                    background: '#fff',
-                    border: '1px solid #e0e0e0',
-                    boxShadow: '0 1px 4px #0002',
-                    marginBottom: link.title ? 2 : 0,
-                    transition: 'transform 0.15s',
-                  }}
-                  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.12)')}
-                  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
-                />
-                {/* Custom tooltip for fast hover */}
+                {displayContent}
                 <span
                   id={tooltipId}
-                  style={{
-                    pointerEvents: 'none',
-                    opacity: 0,
-                    position: 'absolute',
-                    bottom: 40,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: '#23272f',
-                    color: '#f3f6fa',
-                    borderRadius: 6,
-                    padding: '4px 10px',
-                    fontSize: '0.95em',
-                    fontWeight: 500,
-                    whiteSpace: 'pre',
-                    boxShadow: '0 2px 12px #0007',
-                    zIndex: 100,
-                    transition: 'opacity 0.08s',
-                    maxWidth: 220,
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                  }}
+                  className="icon-tooltip"
                   role="tooltip"
                 >
                   {link.title || link.link}
                 </span>
-
               </a>
             </div>
           );
         })}
       </div>
-      <div className="project-todos">
-        <ToDoList todos={proj.todos} setTodos={setTodos} />
+
+        {/* Tab Navigation */}
+        {/* DaisyUI tabs-lift with tab-content, unique name per project */}
+
+
+        <div className='flex flex-col h-full overflow-hidden'>
+          
+          {/* Radio Buttons */}
+          <div className="tabs tabs-lift project-tabs-group" style={{ marginBottom: 0 }}>
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="ToDo"
+              checked={activeTab === 'todos'}
+              onChange={() => setActiveTab('todos')}
+              tabIndex={0}
+            />
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="Completed"
+              checked={activeTab === 'completed'}
+              onChange={() => setActiveTab('completed')}
+              tabIndex={0}
+            />
+            <input
+              type="radio"
+              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              className="tab project-tab"
+              aria-label="Notes"
+              checked={activeTab === 'notes'}
+              onChange={() => setActiveTab('notes')}
+              tabIndex={0}
+            />
+          </div>
+
+          {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
+          <div className='flex-1 overflow-scroll'
+            style={{backgroundColor: '#1d232a', borderBottomLeftRadius: '0.8em', borderBottomRightRadius: '0.8em', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%',border: '1px solid #181b20', borderTop: 'none' }}>
+
+            {/* To Do Tab */}
+            <div
+              className="contents"
+              style={{
+                display: activeTab === 'todos' ? 'block' : 'none',
+              }}
+            >
+              <div className="project-todos pt-4" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+
+                  <ToDoList todos={proj.todos} setTodos={setTodos} />
+
+                </div>
+              </div>
+
+            </div>
+
+            {/* Completed Tab */}
+            <div
+              // className="contents"
+              className="contents"
+              style={{
+                display: activeTab === 'completed' ? 'block' : 'none',
+              }}
+            > 
+            
+              <div className="project-todos pt-4" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <button
+                    onClick={() => {
+                      const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
+                      setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
+                      updateProject(proj.name, { todos: updatedTodos });
+                    }}
+                    className="clear-all-btn"
+                    style={{ margin: 'auto' }}
+                  >
+                  Clear All
+                  </button>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  {/* Added a flag, this renders only completed todos with input bar */}
+                  <ToDoList todos={proj.todos} setTodos={setTodos} showOnlyCompleted />
+                </div>
+              </div>
+
+              
+
+            </div>
+
+
+            {/* Notes Tab */}
+            <div
+              className="contents"
+              style={{
+                display: activeTab === 'notes' ? 'block' : 'none',
+                height: '100%',
+              }}
+            >
+              <div style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' , padding: '0.5em' }}>
+
+                <textarea
+                  value={notesValue}
+                  onChange={e => {
+                    setNotesValue(e.target.value);
+                    if (notesSaveHandle.current) clearTimeout(notesSaveHandle.current);
+                    notesSaveHandle.current = setTimeout(() => {
+                      setProj((prev: Project) => {
+                        const updated = { ...prev, notes: e.target.value };
+                        updateProject(prev.name, updated);
+                        return updated;
+                      });
+                    }, 500);
+                  }}
+
+                  className="project-notes-editor"
+                  style={{ height: '100%', resize: 'none' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
   );
 };
 
-// Wrap export with MenuProvider
 const ProjectCardWithProviders = (props: ProjectCardProps) => (
   <DialogProvider>
     <ProjectCard {...props} />
@@ -253,7 +509,6 @@ const ProjectCardWithProviders = (props: ProjectCardProps) => (
 
 export default ProjectCardWithProviders;
 
-// Recursive menu link item for submenus
 const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ link, projectName }) => {
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const formatLink = useFormatLink();
@@ -291,13 +546,12 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
           )}
         </>
       ) : (
-        link.url ? <a href={formatLink(projectName??'', link.url)} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
+        link.url ? <a href={formatLink(projectName ?? '', link.url)} target="_blank" rel="noopener noreferrer" style={{ color: '#8ec6ff', textDecoration: 'none' }}>{link.label}</a> : link.label
       )}
     </li>
   );
 };
 
-// Recursive component to render QuickLink as ContexifyItem or ContexifySubmenu
 const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({ links, projectName }) => {
   const formatLink = useFormatLink();
 
@@ -305,7 +559,7 @@ const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({
     {links.map((link, idx) => {
       if (link.url && (!link.children || link.children.length === 0)) {
         return (
-          <ContexifyItem key={idx} onClick={() => window.open(formatLink(projectName??'', link.url??''), '_blank')}>
+          <ContexifyItem key={idx} onClick={() => window.open(formatLink(projectName ?? '', link.url ?? ''), '_blank')}>
             {link.label}
           </ContexifyItem>
         );
@@ -316,7 +570,6 @@ const QuickLinksMenu: React.FC<{ links: QuickLink[], projectName: string }> = ({
           </ContexifySubmenu>
         );
       } else {
-        // No url, no children: just label, disabled
         return (
           <ContexifyItem key={idx} disabled>
             {link.label}
