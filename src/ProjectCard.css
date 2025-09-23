@@ -1,21 +1,4 @@
-/* ProjectCard DaisyUI tab customizations */
-.contents {
-  background-color: #1d232a;
-}
-.project-tabs-group {
-  width: 100%;
-  margin-bottom: 0.5em;
-}
-.project-tab {
-  color: #fff;
-  font-weight: 600;
-  flex: 1 1 0%;
-  text-align: center;
-}
-.project-tab.tab-active {
-  color: #fff;
-  font-weight: 700;
-}
+/* ProjectCard styles */
 /* Header buttons */
 .project-header-btn {
   background: none;
@@ -113,8 +96,6 @@
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
-/* Tab navigation */
 
 /* Completed tab content */
 .project-completed {

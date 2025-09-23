@@ -382,35 +382,41 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
         <div className='flex flex-col h-full overflow-hidden'>
           
-          {/* Radio Buttons */}
-          <div className="tabs tabs-lift project-tabs-group" style={{ marginBottom: 0 }}>
-            <input
-              type="radio"
-              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-              className="tab project-tab"
+          {/* Tab Navigation */}
+          <div className="flex border-b border-gray-700 bg-[#1d232a] rounded-t-lg">
+            <button
+              onClick={() => setActiveTab('todos')}
+              className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
+                activeTab === 'todos'
+                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+              }`}
               aria-label="ToDo"
-              checked={activeTab === 'todos'}
-              onChange={() => setActiveTab('todos')}
-              tabIndex={0}
-            />
-            <input
-              type="radio"
-              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-              className="tab project-tab"
+            >
+              ToDo
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
+                activeTab === 'completed'
+                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+              }`}
               aria-label="Completed"
-              checked={activeTab === 'completed'}
-              onChange={() => setActiveTab('completed')}
-              tabIndex={0}
-            />
-            <input
-              type="radio"
-              name={`tabs_${proj.name.replace(/[^a-zA-Z0-9]/g, '_')}`}
-              className="tab project-tab"
+            >
+              Completed
+            </button>
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
+                activeTab === 'notes'
+                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+              }`}
               aria-label="Notes"
-              checked={activeTab === 'notes'}
-              onChange={() => setActiveTab('notes')}
-              tabIndex={0}
-            />
+            >
+              Notes
+            </button>
           </div>
 
           {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
