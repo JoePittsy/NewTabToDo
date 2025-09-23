@@ -49,7 +49,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   const [proj, setProj] = useState(() => deepCloneProject(project));
   const [notesValue, setNotesValue] = useState(() => project.notes ?? '');
   const [accordionState, setAccordionState] = useState<AccordionState>(() => computeAccordionState(project));
-  const [activeTab, setActiveTab] = useState<'notes' | 'todos' | 'completed'>('notes');
+  const [activeTab, setActiveTab] = useState<'notes' | 'todos' | 'completed'>('todos');
   const notesSaveHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notesEditorRef = useRef<HTMLDivElement | null>(null);
   const projectNameRef = useRef(proj.name);
