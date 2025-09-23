@@ -70,7 +70,7 @@ const IconLinksEditor: React.FC<IconLinksEditorProps> = ({ iconLinks, setIconLin
           idx={idx}
           item={item}
           onChange={updated => {
-            const updatedLinks = iconLinks.map((it, i) => i === idx ? updated : it) as IconLink[];
+            const updatedLinks = iconLinks.map((it, i) => i === idx ? updated : it);
             setIconLinks(updatedLinks);
           }}
           onDelete={() => handleDelete(idx)}

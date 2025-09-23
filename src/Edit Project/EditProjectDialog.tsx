@@ -43,7 +43,7 @@ const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ project, onSave, 
         color,
         // Remove favicon if color is set
         iconType: color ? 'color' : updated[index].iconType,
-        favicon: color ? '' : updated[index].favicon
+        icon: color ? '' : updated[index].icon
       };
       return updated;
     });

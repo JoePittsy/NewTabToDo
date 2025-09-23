@@ -117,7 +117,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   }
 
   const setTodos = (todos: ToDoItem[]) => {
-    setProj((p: any) => ({ ...p, todos: JSON.parse(JSON.stringify(todos)) }));
+    setProj((p: Project) => ({ ...p, todos: JSON.parse(JSON.stringify(todos)) }));
     updateProject(proj.name, { todos: JSON.parse(JSON.stringify(todos)) });
   };
 
@@ -162,7 +162,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     }
 
     notesSaveHandle.current = setTimeout(() => {
-      setProj((prev: any) => {
+      setProj((prev: Project) => {
         const updated = { ...prev, notes: newValue };
         updateProject(prev.name, updated);
         return updated;
@@ -482,7 +482,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                     setNotesValue(e.target.value);
                     if (notesSaveHandle.current) clearTimeout(notesSaveHandle.current);
                     notesSaveHandle.current = setTimeout(() => {
-                      setProj(prev => {
+                      setProj((prev: Project) => {
                         const updated = { ...prev, notes: e.target.value };
                         updateProject(prev.name, updated);
                         return updated;
