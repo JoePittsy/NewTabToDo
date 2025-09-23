@@ -3,7 +3,7 @@
 .project-header-btn {
   background: none;
   border: none;
-  color: #8ec6ff;
+  color: #a1a1aa;
   font-size: 1.6em;
   cursor: pointer;
   padding: 0 0.1em;
@@ -11,7 +11,7 @@
   margin-right: 0;
 }
 .project-header-btn.pinned {
-  color: #ffd700;
+  color: #fbbf24;
 }
 .project-header-btn.drag {
   cursor: grab;
@@ -82,7 +82,7 @@
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  background: #23272f;
+  background: #27272a;
   color: #f3f6fa;
   border-radius: 6px;
   padding: 4px 10px;
@@ -95,6 +95,7 @@
   max-width: 220px;
   text-overflow: ellipsis;
   overflow: hidden;
+  border: 1px solid #3f3f46;
 }
 
 /* Completed tab content */
@@ -102,7 +103,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #23272f;
+  background: #27272a;
   border-radius: 8px;
   padding: 0.5em;
   overflow-y: auto;
@@ -111,14 +112,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #2d313a;
+  background: #3f3f46;
   padding: 0.5em;
   border-radius: 8px;
   font-weight: 600;
   margin-bottom: 0.5em;
 }
 .clear-all-btn {
-  background: #e57373;
+  background: #ef4444;
   color: white;
   border: none;
   border-radius: 4px;
@@ -132,7 +133,7 @@
 }
 .completed-list-item {
   padding: 0.5em;
-  border-bottom: 1px solid #3a3f4a;
+  border-bottom: 1px solid #52525b;
   display: flex;
   justify-content: space-between;
 }
@@ -150,13 +151,13 @@
   flex: 1;
   padding: 0.5em;
   min-height: 100px;
-  border: 1px solid #444;
+  border: 1px solid #3f3f46;
   border-radius: 8px;
-  background: #23272f;
+  background: #27272a;
 }
 /* ProjectCard styles */
 .project-card {
-  background: #23272f;
+  background: #27272a;
   border-radius: 1.2em;
   box-shadow: 0 4px 24px 0 #0006;
   padding: 0em;
@@ -165,7 +166,7 @@
   color: #f3f6fa;
   text-align: left;
   font-size: 1.08em;
-  border: 1px solid #2d313a;
+  border: 1px solid #3f3f46;
   transition: box-shadow 0.2s;
   min-height: 0;
   max-height: 80vh;
@@ -217,8 +218,8 @@
   position: relative;
 }
 .dropdown-toggle {
-  background: #2d313a;
-  color: #8ec6ff;
+  background: #3f3f46;
+  color: #a1a1aa;
   border: none;
   border-radius: 0.5em;
   padding: 0.3em 0.9em;
@@ -228,26 +229,26 @@
   transition: background 0.2s;
 }
 .dropdown-toggle:hover {
-  background: #3a4050;
+  background: #52525b;
 }
 .dropdown-menu {
   position: absolute;
   top: 2.2em;
   left: 0;
-  background: #23272f;
+  background: #27272a;
   border-radius: 0.5em;
   box-shadow: 0 2px 12px #0005;
   min-width: 160px;
   z-index: 10;
   padding: 0.5em 0;
-  border: 1px solid #2d313a;
+  border: 1px solid #3f3f46;
 }
 .dropdown-menu li {
   list-style: none;
   padding: 0.3em 1.1em;
 }
 .dropdown-menu a {
-  color: #8ec6ff;
+  color: #a1a1aa;
   text-decoration: none;
   font-weight: 500;
 }
@@ -275,11 +276,11 @@ form {
   width: 100%;
 }
 form input[type="text"] {
-  border: 1px solid #2d313a;
+  border: 1px solid #3f3f46;
   border-radius: 0.4em;
   padding: 0.5em 1em;
   font-size: 1em;
-  background: #181b20;
+  background: #27272a;
   color: #f3f6fa;
   outline: none;
   margin-right: 0.5em;
@@ -287,11 +288,11 @@ form input[type="text"] {
   transition: border 0.2s;
 }
 form input[type="text"]:focus {
-  border: 1.5px solid #8ec6ff;
+  border: 1.5px solid #a1a1aa;
 }
 form button[type="submit"] {
-  background: #8ec6ff;
-  color: #23272f;
+  background: #a1a1aa;
+  color: #27272a;
   border: none;
   border-radius: 0.4em;
   padding: 0.5em 1.2em;
@@ -301,6 +302,6 @@ form button[type="submit"] {
   transition: background 0.2s;
 }
 form button[type="submit"]:hover {
-  background: #5fa8e6;
+  background: #d4d4d8;
 }
 

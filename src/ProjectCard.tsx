@@ -383,13 +383,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         <div className='flex flex-col h-full overflow-hidden'>
           
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-700 bg-[#1d232a] rounded-t-lg">
+          <div className="flex border-b border-zinc-700 bg-zinc-800 rounded-t-lg">
             <button
               onClick={() => setActiveTab('todos')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
                 activeTab === 'todos'
-                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
-                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+                  ? 'border-zinc-400 text-zinc-200 bg-zinc-700'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-300 hover:bg-zinc-600/50'
               }`}
               aria-label="ToDo"
             >
@@ -399,8 +399,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               onClick={() => setActiveTab('completed')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
                 activeTab === 'completed'
-                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
-                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+                  ? 'border-zinc-400 text-zinc-200 bg-zinc-700'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-300 hover:bg-zinc-600/50'
               }`}
               aria-label="Completed"
             >
@@ -410,8 +410,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               onClick={() => setActiveTab('notes')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
                 activeTab === 'notes'
-                  ? 'border-blue-400 text-blue-400 bg-[#2d313a]'
-                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#2d313a]/50'
+                  ? 'border-zinc-400 text-zinc-200 bg-zinc-700'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-300 hover:bg-zinc-600/50'
               }`}
               aria-label="Notes"
             >
@@ -420,8 +420,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
 
           {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
-          <div className='flex-1 overflow-scroll'
-            style={{backgroundColor: '#1d232a', borderBottomLeftRadius: '0.8em', borderBottomRightRadius: '0.8em', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%',border: '1px solid #181b20', borderTop: 'none', width: '100%' }}>
+          <div className='flex-1 overflow-scroll bg-zinc-800 rounded-b-lg border border-zinc-700 border-t-0'>
 
             {/* To Do Tab */}
             <div
