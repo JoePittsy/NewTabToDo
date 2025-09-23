@@ -38,7 +38,7 @@
 /* Icon links */
 .icon-links {
   height: 56px;
-  padding: 0.25rem;
+  padding: 2em;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -178,7 +178,7 @@
   background: #23272f;
   border-radius: 1.2em;
   box-shadow: 0 4px 24px 0 #0006;
-  padding: 1.5em;
+  padding: 0em;
   margin: 2em;
   width: 520px; /* was 420px */
   color: #f3f6fa;
@@ -197,6 +197,8 @@
   box-shadow: 0 8px 32px 0 #000a;
 }
 .project-header {
+  padding: 2em;
+  padding-bottom: 0.5em;
   display: flex;
   align-items: center;
   gap: 1.2em;

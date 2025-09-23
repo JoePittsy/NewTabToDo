@@ -415,7 +415,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
           {/* Tab content blocks stacked below the tab group, always rendered, only one visible */}
           <div className='flex-1 overflow-scroll'
-            style={{backgroundColor: '#1d232a', borderBottomLeftRadius: '0.8em', borderBottomRightRadius: '0.8em', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%',border: '1px solid #181b20', borderTop: 'none' }}>
+            style={{backgroundColor: '#1d232a', borderBottomLeftRadius: '0.8em', borderBottomRightRadius: '0.8em', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%',border: '1px solid #181b20', borderTop: 'none', width: '100%' }}>
 
             {/* To Do Tab */}
             <div
