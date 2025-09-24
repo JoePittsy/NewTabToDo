@@ -144,6 +144,7 @@ function App() {
             ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             {/* Top-right buttons */}
+
             <div className="fixed top-4 right-4 z-[10010] flex gap-2">
                 <button
                     type="button"
