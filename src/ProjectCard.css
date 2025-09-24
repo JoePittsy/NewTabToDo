@@ -157,7 +157,11 @@
 }
 /* ProjectCard styles */
 .project-card {
-  background: #27272a;
+  background: rgba(27, 27, 29,0.2);
+  backdrop-filter: blur(11.5px);
+  -webkit-backdrop-filter: blur(11.5px);
+
+
   border-radius: 1.2em;
   box-shadow: 0 4px 24px 0 #0006;
   padding: 0em;
