@@ -202,8 +202,8 @@ function App() {
                 style={{
                     display: 'flex',
                     flexDirection: 'row',
-                    alignItems: openProjectObjs.length <= 1 ? 'center' : 'flex-start',
-                    justifyContent: openProjectObjs.length <= 1 ? 'center' : 'flex-start',
+                    alignItems: openProjectObjs.length <= 2 ? 'center' : 'flex-start',
+                    justifyContent: openProjectObjs.length <= 2 ? 'center' : 'flex-start',
                     overflowX: 'auto',
                     padding: '2em 4em 2em 4em', // padding: top, right, bottom, left
                     minHeight: '100vh',
