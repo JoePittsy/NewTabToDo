@@ -16,6 +16,14 @@ import {
 import 'react-contexify/dist/ReactContexify.css';
 import './ProjectCard.css';
 import { useFormatLink, useSettings } from './SettingsProvider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export interface QuickLink {
   label: string;
@@ -173,6 +181,48 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
   return (
     <div className="project-card">
       {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
+
+       {/* <button onClick={handleEdit}>Edit</button>
+        <button onClick={handleClose}>Close</button>
+        <button onClick={handleExport}>Export</button> */}
+
+      <div className='ProjectCardQuickActions pl-8 pt-2'>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABmUlEQVR4nN2VzStEYRTGZ3yMQs3/oGymbJSFjx2KUj7Kwl5JjPIfXCvKzmLKQha+yoL/gbKzwaRIYv4BTUSKn06Oel3n3vcdZePZ3Lnvec7z3Pfced6byfxrAA3ACLALnAEPwCNwCWwDk0Djb8UHgFv8uAbGahVfAd4DxC+c39JTFyK+RBjuRRCYA551bdknPl6D+JDT1w+8aG00STwH3HmEe1IeTnYiuDJfPDDle+xM+u5lXOdKnbAI+x7949T5fmoUlbtlFW+0uGOI9/rEVaOg/LJVrGoxD0Qxg74EQcnJKpDV+2blVy2yJFTQqveRb1TOWukrA1IHjiwDib+g4KxFloNhINgE6tPmt6HEYmw9CjQQ7CWeTcCwE/9vkSfcQHAINFkGWeBUSfOxWqUGA8Fs0i66gFeN/WBsd5UUA+kRHCS+A6dpRk9SMVlwx2UYCG8NWNTSG9AeYjLtHF5lNeowDLr1mndyVPIaaFMncGINOIEvOxE8AS1BJtooX7Z1zYmE8WeIPnlt+kmVIycXbFAL5BQw/6J/iQ8xje2qB77gBAAAAABJRU5ErkJggg==" alt="internet"></img>
+            </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Project Links</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {proj.quickLinks && proj.quickLinks.length > 0 ? (
+              proj.quickLinks.map((link, idx) =>
+                link.url ? (
+                  <DropdownMenuItem
+                    key={idx}
+                    onClick={() => window.open(formatLink(proj.name, link.url!), '_blank')}
+                  >
+                    {link.label}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem key={idx} disabled>
+                    {link.label}
+                  </DropdownMenuItem>
+                )
+              )
+            ) : (
+              <DropdownMenuItem disabled>No links</DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <button onClick={handleEdit}><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAuElEQVR4nO2Uuw3CMBRFXbJBBOtAAUyTJWigJqswRmgQSRtmICUHObKVxAJ/Ypc+5fPTPfaNFCESA6yBO3BOnT0AVIxcROKbl8AKuClBbS4dgRd+9MBuEt6o+UlJrnJuCmLDNeW/Zw4E1FIAD+a0wCZaQGj4VOBRSxEc7hD0RudP47zRH1TvLa4Ie/hWXiZW8DNcnb3lMJWgNTsHPtECG1ngJAuSCHx/1zY6m+AgF1hOB+zdb82IkS9ivt889VHIRQAAAABJRU5ErkJggg==" alt="edit"></img></button>
+        <button onClick={handleClose}><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABS0lEQVR4nO2WO04DMRCG9xIUPIIoKUIVOsIBkABxDvLgLHQgEAUlfQg3YbkACLqwdCT60EiOZKH17KzXUVLkl1ay7P317cx6xs6ytVZNwC4wAF6AHPhxT+7m+kArJXAbuAWmVGsGPAF7TaEXQEF9fQPnsdArF0GsxDuMiXTWAOrDbZEDO5Hp1dK+ZQE/kF53lpIJ7d4j4BD4LFmTuQ7QDXinkkkNLHUaUse90/4Hl3HbrcmHhdTTwGPF6APm8LK5kEYa+E0xlsGtUFGugS27+Qs48Dz7wIfBVywC/G7wTVYy1eNlba7+AsvpUgO3lAbSrWggsnYc8P6qDcTB70mvGxXqHfzS2FNpAmxWgh38xHjjsByLZyaoBx8muAgMakHnkkM8Mu2S3tOsiYAN4NrtTEuUj+Z/WuNm0gOegVfXXgs3HkmdVpbMWtkS9AcczgesBTVL2QAAAABJRU5ErkJggg==" alt="cancel" style={{ width: '1.5em', height: '1.5em' }}></img></button>
+        <button onClick={handleExport}><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nO3Wu2sVQRiG8fUCUYOSJp0xIEgI1raS1ElQQfAPMNimsEwjKcQyWGuRQAiBdLm0SfACBluFaJVOtPCSRtT4k4E5sBmyu+csew4IedpvZp7dd7+Z2Sw74X8HZzCOp9jHi27KzmEKz/HFUfabll2IskV8V8x8E7JBTGMDPwtEf5PaWF3ZFTzAGn4r5wBLUS7GfrYT2VXM4GVukSo+4m4S+7N2ZNfxCO91zmZMJp07USXdVo+QxlyIE+tJ7Ufo9irx6xrSEOntOD/IU1baifk8FjqQfgifJs69VdAH9yrFuQcI3furQhoiHYjjR/DtmDFhO11qWxwXu4lPxywW3uoJTsdxF/Gu6OE6krbAZbxJGuVOrn4KqyWp3M/qgr6wD7GH0aQWtl0Rf8IJV1vcIt0SmMRhiXgnaxpcw1flzDQt7StppnwDDjcqDsT7toy3WRcv/N0S8WxXxAEM4XOB+Ej3N078p0rv5r2uSlvgYSJ+nPUKLOfEN3op7scrbIVjtGfiE7I2+AcEHXWoJXkgBAAAAABJRU5ErkJggg==" alt="filled-sent" style={{ width: '1.5em', height: '1.5em' }}></img></button>
+       
+      </div>
+
+
       <div className="project-header">
         {proj.logo ? (
           <img src={proj.logo} alt={proj.name + ' logo'} className="project-logo" style={{ objectFit: 'cover' }} />
@@ -205,6 +255,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         <div className="project-title-row" style={{ display: 'flex', alignItems: 'center', gap: '1.2em', justifyContent: 'space-between', width: '100%' }}>
           <h2 className="project-name">{proj.name}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+
             <button
               aria-label={proj.pinned ? "Unpin project" : "Pin project"}
               onClick={e => {
@@ -224,7 +275,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 <img src={pinSvg} alt="Unpinned" style={{ width: 22, height: 22, verticalAlign: 'middle' }} />
               )}
             </button>
-            <button
+            {/* <button
               aria-label="Project menu"
               className="project-header-btn"
               onClick={e => {
@@ -238,7 +289,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               tabIndex={0}
             >
               &#x22EE;
-            </button>
+            </button> */}
             {dragHandleProps && (
               <button
                 aria-label="Drag to reorder"
@@ -252,7 +303,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
           </div>
         </div>
       </div>
-      <ContexifyMenu id={MENU_ID} animation="fade">
+      {/* <ContexifyMenu id={MENU_ID} animation="fade">
         <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}>
           <QuickLinksMenu links={proj.quickLinks} projectName={proj.name} />
         </ContexifySubmenu>
@@ -266,7 +317,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         <ContexifyItem onClick={handleExport}>
           Export Project
         </ContexifyItem>
-      </ContexifyMenu>
+      </ContexifyMenu> */}
 
       <div className='icon-links'>
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -532,7 +583,7 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
               style={{
                 position: 'absolute',
                 top: 0,
-                left: '100%',
+                // left: '100%',
                 minWidth: 180,
                 background: '#23272f',
                 border: '1px solid #2d313a',
