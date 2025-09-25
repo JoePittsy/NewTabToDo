@@ -156,6 +156,29 @@
   border-radius: 8px;
   background: #27272a;
 }
+/* ProjectCardQuickActions buttons */
+.project-quick-action-btn {
+  background: none;
+  border: none;
+  padding: 0.2em;
+  border-radius: 0.25em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-quick-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.project-quick-action-icon {
+  width: 1em;
+  height: 1em;
+}
+
 /* ProjectCard styles */
 .project-card {
   background: rgba(27, 27, 29,0.2);
@@ -183,7 +206,8 @@
 }
 .project-header {
   margin-top: -1em;
-  padding: 2em;
+  padding-left: 2em;
+  
   padding-bottom: 0.0em;
   padding-top: 0em;
   display: flex;

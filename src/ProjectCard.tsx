@@ -188,30 +188,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
       <div className='ProjectCardQuickActions pt-2 pr-5'  style={{ display: 'flex', justifyContent:'flex-end', position: 'relative', gap: '0em', zIndex:1 }}>
         
+        {dragHandleProps && (
+              <button
+                style={{marginRight: '6em'}}
+                aria-label="Drag to reorder"
+                className="project-header-btn drag"
+                {...dragHandleProps}
+                tabIndex={0}
+              >
+                <img style={{height: '1em',width: '1em', rotate: '90deg'}} src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgklEQVR4nO3UsQmAQAyFYUWxdFR3cAGHcCOt3EIsrH8JpAqCMVgcmK9+BO4SXlWVDGiB+qvcI6AHZuAEDmACumjOTYdZYzTnAjT6AmuL5NxkV8B+M3CJ5F7RXVlDNOcmByK7km8DVhl2d7XeXCoX2VxGNpfK5koFI5vLyOZS2Vw/dwHed3H44QsrtwAAAABJRU5ErkJggg==" alt="drag-handle"></img>
+              </button>
+            )}
+
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5em',
-                borderRadius: '0.25em',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABmUlEQVR4nN2VzStEYRTGZ3yMQs3/oGymbJSFjx2KUj7Kwl5JjPIfXCvKzmLKQha+yoL/gbKzwaRIYv4BTUSKn06Oel3n3vcdZePZ3Lnvec7z3Pfced6byfxrAA3ACLALnAEPwCNwCWwDk0Djb8UHgFv8uAbGahVfAd4DxC+c39JTFyK+RBjuRRCYA551bdknPl6D+JDT1w+8aG00STwH3HmEe1IeTnYiuDJfPDDle+xM+u5lXOdKnbAI+x7949T5fmoUlbtlFW+0uGOI9/rEVaOg/LJVrGoxD0Qxg74EQcnJKpDV+2blVy2yJFTQqveRb1TOWukrA1IHjiwDib+g4KxFloNhINgE6tPmt6HEYmw9CjQQ7CWeTcCwE/9vkSfcQHAINFkGWeBUSfOxWqUGA8Fs0i66gFeN/WBsd5UUA+kRHCS+A6dpRk9SMVlwx2UYCG8NWNTSG9AeYjLtHF5lNeowDLr1mndyVPIaaFMncGINOIEvOxE8AS1BJtooX7Z1zYmE8WeIPnlt+kmVIycXbFAL5BQw/6J/iQ8xje2qB77gBAAAAABJRU5ErkJggg==" alt="internet" style={{ width: '1.5em', height: '1.5em' }}></img>
+            <button className="project-quick-action-btn">
+              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABmUlEQVR4nN2VzStEYRTGZ3yMQs3/oGymbJSFjx2KUj7Kwl5JjPIfXCvKzmLKQha+yoL/gbKzwaRIYv4BTUSKn06Oel3n3vcdZePZ3Lnvec7z3Pfced6byfxrAA3ACLALnAEPwCNwCWwDk0Djb8UHgFv8uAbGahVfAd4DxC+c39JTFyK+RBjuRRCYA551bdknPl6D+JDT1w+8aG00STwH3HmEe1IeTnYiuDJfPDDle+xM+u5lXOdKnbAI+x7949T5fmoUlbtlFW+0uGOI9/rEVaOg/LJVrGoxD0Qxg74EQcnJKpDV+2blVy2yJFTQqveRb1TOWukrA1IHjiwDib+g4KxFloNhINgE6tPmt6HEYmw9CjQQ7CWeTcCwE/9vkSfcQHAINFkGWeBUSfOxWqUGA8Fs0i66gFeN/WBsd5UUA+kRHCS+A6dpRk9SMVlwx2UYCG8NWNTSG9AeYjLtHF5lNeowDLr1mndyVPIaaFMncGINOIEvOxE8AS1BJtooX7Z1zYmE8WeIPnlt+kmVIycXbFAL5BQw/6J/iQ8xje2qB77gBAAAAABJRU5ErkJggg==" alt="internet" className="project-quick-action-icon"></img>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -240,75 +233,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
         <button
           onClick={handleEdit}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.5em',
-            borderRadius: '0.25em',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="project-quick-action-btn"
         >
-          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAuElEQVR4nO2Uuw3CMBRFXbJBBOtAAUyTJWigJqswRmgQSRtmICUHObKVxAJ/Ypc+5fPTPfaNFCESA6yBO3BOnT0AVIxcROKbl8AKuClBbS4dgRd+9MBuEt6o+UlJrnJuCmLDNeW/Zw4E1FIAD+a0wCZaQGj4VOBRSxEc7hD0RudP47zRH1TvLa4Ie/hWXiZW8DNcnb3lMJWgNTsHPtECG1ngJAuSCHx/1zY6m+AgF1hOB+zdb82IkS9ivt889VHIRQAAAABJRU5ErkJggg==" alt="edit" style={{ width: '1.5em', height: '1.5em' }}></img>
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAuElEQVR4nO2Uuw3CMBRFXbJBBOtAAUyTJWigJqswRmgQSRtmICUHObKVxAJ/Ypc+5fPTPfaNFCESA6yBO3BOnT0AVIxcROKbl8AKuClBbS4dgRd+9MBuEt6o+UlJrnJuCmLDNeW/Zw4E1FIAD+a0wCZaQGj4VOBRSxEc7hD0RudP47zRH1TvLa4Ie/hWXiZW8DNcnb3lMJWgNTsHPtECG1ngJAuSCHx/1zY6m+AgF1hOB+zdb82IkS9ivt889VHIRQAAAABJRU5ErkJggg==" alt="edit" className="project-quick-action-icon"></img>
         </button>
         <button
           onClick={handleClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.5em',
-            borderRadius: '0.25em',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="project-quick-action-btn"
         >
-          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABS0lEQVR4nO2WO04DMRCG9xIUPIIoKUIVOsIBkABxDvLgLHQgEAUlfQg3YbkACLqwdCT60EiOZKH17KzXUVLkl1ay7P317cx6xs6ytVZNwC4wAF6AHPhxT+7m+kArJXAbuAWmVGsGPAF7TaEXQEF9fQPnsdArF0GsxDuMiXTWAOrDbZEDO5Hp1dK+ZQE/kF53lpIJ7d4j4BD4LFmTuQ7QDXinkkkNLHUaUse90/4Hl3HbrcmHhdTTwGPF6APm8LK5kEYa+E0xlsGtUFGugS27+Qs48Dz7wIfBVywC/G7wTVYy1eNlba7+AsvpUgO3lAbSrWggsnYc8P6qDcTB70mvGxXqHfzS2FNpAmxWgh38xHjjsByLZyaoBx8muAgMakHnkkM8Mu2S3tOsiYAN4NrtTEuUj+Z/WuNm0gOegVfXXgs3HkmdVpbMWtkS9AcczgesBTVL2QAAAABJRU5ErkJggg==" alt="cancel" style={{ width: '1.5em', height: '1.5em' }}></img>
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABS0lEQVR4nO2WO04DMRCG9xIUPIIoKUIVOsIBkABxDvLgLHQgEAUlfQg3YbkACLqwdCT60EiOZKH17KzXUVLkl1ay7P317cx6xs6ytVZNwC4wAF6AHPhxT+7m+kArJXAbuAWmVGsGPAF7TaEXQEF9fQPnsdArF0GsxDuMiXTWAOrDbZEDO5Hp1dK+ZQE/kF53lpIJ7d4j4BD4LFmTuQ7QDXinkkkNLHUaUse90/4Hl3HbrcmHhdTTwGPF6APm8LK5kEYa+E0xlsGtUFGugS27+Qs48Dz7wIfBVywC/G7wTVYy1eNlba7+AsvpUgO3lAbSrWggsnYc8P6qDcTB70mvGxXqHfzS2FNpAmxWgh38xHjjsByLZyaoBx8muAgMakHnkkM8Mu2S3tOsiYAN4NrtTEuUj+Z/WuNm0gOegVfXXgs3HkmdVpbMWtkS9AcczgesBTVL2QAAAABJRU5ErkJggg==" alt="cancel" className="project-quick-action-icon"></img>
         </button>
         <button
           onClick={handleExport}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.5em',
-            borderRadius: '0.25em',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="project-quick-action-btn"
         >
-          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nO3Wu2sVQRiG8fUCUYOSJp0xIEgI1raS1ElQQfAPMNimsEwjKcQyWGuRQAiBdLm0SfACBluFaJVOtPCSRtT4k4E5sBmyu+csew4IedpvZp7dd7+Z2Sw74X8HZzCOp9jHi27KzmEKz/HFUfabll2IskV8V8x8E7JBTGMDPwtEf5PaWF3ZFTzAGn4r5wBLUS7GfrYT2VXM4GVukSo+4m4S+7N2ZNfxCO91zmZMJp07USXdVo+QxlyIE+tJ7Ufo9irx6xrSEOntOD/IU1baifk8FjqQfgifJs69VdAH9yrFuQcI3furQhoiHYjjR/DtmDFhO11qWxwXu4lPxywW3uoJTsdxF/Gu6OE6krbAZbxJGuVOrn4KqyWp3M/qgr6wD7GH0aQWtl0Rf8IJV1vcIt0SmMRhiXgnaxpcw1flzDQt7StppnwDDjcqDsT7toy3WRcv/N0S8WxXxAEM4XOB+Ej3N078p0rv5r2uSlvgYSJ+nPUKLOfEN3op7scrbIVjtGfiE7I2+AcEHXWoJXkgBAAAAABJRU5ErkJggg==" alt="filled-sent" style={{ width: '1.5em', height: '1.5em' }}></img>
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nO3Wu2sVQRiG8fUCUYOSJp0xIEgI1raS1ElQQfAPMNimsEwjKcQyWGuRQAiBdLm0SfACBluFaJVOtPCSRtT4k4E5sBmyu+csew4IedpvZp7dd7+Z2Sw74X8HZzCOp9jHi27KzmEKz/HFUfabll2IskV8V8x8E7JBTGMDPwtEf5PaWF3ZFTzAGn4r5wBLUS7GfrYT2VXM4GVukSo+4m4S+7N2ZNfxCO91zmZMJp07USXdVo+QxlyIE+tJ7Ufo9irx6xrSEOntOD/IU1baifk8FjqQfgifJs69VdAH9yrFuQcI3furQhoiHYjjR/DtmDFhO11qWxwXu4lPxywW3uoJTsdxF/Gu6OE6krbAZbxJGuVOrn4KqyWp3M/qgr6wD7GH0aQWtl0Rf8IJV1vcIt0SmMRhiXgnaxpcw1flzDQt7StppnwDDjcqDsT7toy3WRcv/N0S8WxXxAEM4XOB+Ej3N078p0rv5r2uSlvgYSJ+nPUKLOfEN3op7scrbIVjtGfiE7I2+AcEHXWoJXkgBAAAAABJRU5ErkJggg==" alt="filled-sent" className="project-quick-action-icon"></img>
         </button>
 
         <button
@@ -321,30 +260,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               return updated;
             });
           }}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.5em',
-            borderRadius: '0.25em',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="project-quick-action-btn"
         >
           {proj.pinned ? (
-            <img src={unpinSvg} alt="Pinned" style={{ width: '1.5em', height: '1.5em' }} />
+            <img src={unpinSvg} alt="Pinned" className="project-quick-action-icon" />
           ) : (
-            <img src={pinSvg} alt="Unpinned" style={{ width: '1.5em', height: '1.5em' }} />
+            <img src={pinSvg} alt="Unpinned" className="project-quick-action-icon" />
           )}
         </button>
 
@@ -398,7 +319,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             >
               &#x22EE;
             </button> */}
-            {dragHandleProps && (
+            {/* {dragHandleProps && (
               <button
                 aria-label="Drag to reorder"
                 className="project-header-btn drag"
@@ -407,7 +328,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               >
                 ≡
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </div>
