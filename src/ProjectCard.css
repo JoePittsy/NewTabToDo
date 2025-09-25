@@ -21,7 +21,8 @@
 /* Icon links */
 .icon-links {
   height: 56px;
-  padding: 2em;
+  /* padding: 2em; */
+  padding-left: 2em;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -181,9 +182,10 @@
   box-shadow: 0 8px 32px 0 #000a;
 }
 .project-header {
+  margin-top: -1em;
   padding: 2em;
   padding-bottom: 0.0em;
-  padding-top: 1em;
+  padding-top: 0em;
   display: flex;
   align-items: center;
   gap: 1.2em;
