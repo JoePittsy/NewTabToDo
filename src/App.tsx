@@ -189,10 +189,10 @@ function App() {
                 style={{
                     display: 'flex',
                     flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    justifyContent: 'flex-start',
+                    alignItems: openProjectObjs.length <= 1 ? 'center' : 'flex-start',
+                    justifyContent: openProjectObjs.length <= 1 ? 'center' : 'flex-start',
                     overflowX: 'auto',
-                    padding: '2em 4em 3em 4em', // padding: top, right, bottom, left
+                    padding: '2em 4em 2em 4em', // padding: top, right, bottom, left
                     minHeight: '100vh',
                     boxSizing: 'border-box'
                 }}
@@ -204,7 +204,7 @@ function App() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         width: '100%',
-                        minHeight: '50vh',
+                        // minHeight: '100vh',
                         color: '#aaa',
                         fontSize: '1.5rem',
                         fontWeight: 500,
