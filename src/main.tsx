@@ -13,6 +13,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
       color2="#b2dfdf"
       color3="#0c204e"
       pixelFilter={1200}
+      lighting={0.2}
       // isRotate={true}
       className="fixed inset-0 -z-10" />
       
