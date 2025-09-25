@@ -44,12 +44,15 @@ function App() {
             }
         }
         window.addEventListener('keydown', onKeyDown);
-        // Horizontal scroll on wheel for main container
-        const main = document.getElementsByTagName('html')[0];
+
+        // Horizontal scroll wheel binding for MAIN container only when not over ProjectCards
+        const main = document.getElementById('MAIN');
         function onWheel(e: WheelEvent) {
             if (!main) return;
-            if (e.deltaY > 0) main.scrollLeft += 100;
-            else main.scrollLeft -= 100;
+            // Ignore if hovering directly over a ProjectCard
+            if ((e.target as HTMLElement).closest('.project-card')) return;
+            // Scroll horizontally using vertical wheel movement
+            main.scrollLeft += e.deltaY;
         }
         if (main) main.addEventListener('wheel', onWheel);
         return () => {
@@ -185,7 +188,8 @@ function App() {
                 </button>
             </div>
             <main
-                // id="MAIN"
+                id="MAIN"
+                role="main"
                 style={{
                     display: 'flex',
                     flexDirection: 'row',

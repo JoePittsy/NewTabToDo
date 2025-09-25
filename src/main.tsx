@@ -8,7 +8,14 @@ import { PsychedelicSpiral } from './components/ui/shadcn-io/psychedelic-spiral'
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <div className="p-1">
-      <PsychedelicSpiral className="fixed inset-0 -z-10" />
+      <PsychedelicSpiral 
+      color1="#871d87"
+      color2="#b2dfdf"
+      color3="#0c204e"
+      pixelFilter={1200}
+      // isRotate={true}
+      className="fixed inset-0 -z-10" />
+      
       <App />
     </div>
   </StrictMode>,
