@@ -356,10 +356,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
             tabIndex={0}
             aria-describedby={`all-links-tooltip-${proj.name}`}
             onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.12)';
               const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
               if (tooltip) tooltip.style.opacity = '1';
             }}
             onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1)';
               const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
               if (tooltip) tooltip.style.opacity = '0';
             }}
@@ -372,7 +374,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
               if (tooltip) tooltip.style.opacity = '0';
             }}
           >
-            <span style={{ fontSize: '1.8em' }}>🔗</span>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAs0lEQVR4nO3SMQ6DMAyFYS4B6hFQT5JztwNDO5WheypVvcWPQJkQCXYwRa3yRkT8OY6rquQXA1yJpzsKZjd41kQNPL4KAw3QB68XwYADXujyAc4RtJHC3hIN30Xw+k/rb/oETqqaZMCxm862/WIKJ8Y7jV/T/ZQt4wVa4L0LTGK8YeEwh0kskqb5HPi2dFNNjVy4A+5LqLSGzSGLGhQ4IwUW5UjYYxOvhZ0BPp53ykGV/FkG5WgPFpZBmkQAAAAASUVORK5CYII=" alt="external-link" className="icon-link-img" style={{background: 'rgba(255, 255, 255, 0.1)', border: 0}} />
           </button>
           <span
             id={`all-links-tooltip-${proj.name}`}

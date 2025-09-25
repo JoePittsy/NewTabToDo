@@ -4,7 +4,6 @@
   background: none;
   border: none;
   color: #a1a1aa;
-  font-size: 1.6em;
   cursor: pointer;
   padding: 0 0.1em;
   border-radius: 6px;
@@ -55,7 +54,7 @@
   box-shadow: 0 1px 4px #0002;
   transition: transform 0.15s;
   margin-bottom: 2px;
-  background: #fff;
+  background: rgb(255, 255, 255);
   object-fit: contain;
 }
 .icon-link-text {
