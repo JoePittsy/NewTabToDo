@@ -7,8 +7,9 @@ import { PsychedelicSpiral } from './components/ui/shadcn-io/psychedelic-spiral'
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-     {/* <PsychedelicSpiral/> */}
+    <div className="p-1">
+      <PsychedelicSpiral className="fixed inset-0 -z-10" />
       <App />
-      <PsychedelicSpiral/>
+    </div>
   </StrictMode>,
 );
