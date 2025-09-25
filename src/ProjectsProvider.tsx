@@ -69,11 +69,13 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const reloadProjects = useCallback((autoOpenPinned: boolean = true) => {
         loadAllProjectsFromIDB().then(projects => {
             setProjects(projects);
-            // Only auto-open pinned projects on initial load, not on site changes
+            // Only auto-open effectively pinned projects on initial load, not on site changes
             if (autoOpenPinned) {
-                const pinnedProjects = projects.filter(p => p.pinned).map(p => p.name);
-                if (pinnedProjects.length > 0) {
-                    setOpenedProjects(prev => [...new Set([...prev, ...pinnedProjects])]);
+                const effectivelyPinnedProjects = projects
+                    .filter(p => isProjectEffectivelyPinned(p))
+                    .map(p => p.name);
+                if (effectivelyPinnedProjects.length > 0) {
+                    setOpenedProjects(prev => [...new Set([...prev, ...effectivelyPinnedProjects])]);
                 }
             }
         });
@@ -113,6 +115,13 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         </ProjectsContext.Provider>
     );
 };
+
+// Helper function to determine if a project should be considered "pinned"
+// A project is effectively pinned if it's manually pinned OR has uncompleted todos
+export function isProjectEffectivelyPinned(project: Project): boolean {
+    const hasUncompletedTodos = project.todos?.some((todo: ToDoItem) => !todo.completed) ?? false;
+    return project.pinned === true || hasUncompletedTodos;
+}
 
 export function useProjects() {
     const ctx = useContext(ProjectsContext);

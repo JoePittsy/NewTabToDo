@@ -7,7 +7,7 @@ import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './Edit Project/EditProjectDialog';
 import CommandPalette from './CommandPalette';
-import { ProjectsProvider, useProjects, Project, IconLink } from './ProjectsProvider';
+import { ProjectsProvider, useProjects, Project, IconLink, isProjectEffectivelyPinned } from './ProjectsProvider';
 import {
     DndContext as ProjectDndContext,
     closestCenter as projectClosestCenter,
@@ -62,20 +62,29 @@ function App() {
     }, []);
 
     useEffect(() => {
-        // On mount, open up to 5 projects with the most uncompleted to-dos
+        // On mount, open up to 5 effectively pinned projects (manually pinned OR with todos)
         if (openedProjects.length === 0 && projects.length > 0) {
-            // Only consider projects with at least one uncompleted to-do
-            const withUncompleted = projects.filter(p => (p.todos?.some((t: any) => !t.completed)));
-            // Sort by number of uncompleted to-dos (descending), then by most recent to-do createdOn
-            const sorted = [...withUncompleted].sort((a, b) => {
+            // Only consider effectively pinned projects
+            const effectivelyPinned = projects.filter(p => isProjectEffectivelyPinned(p));
+
+            // Sort by: manually pinned first, then by number of uncompleted to-dos (descending),
+            // then by most recent to-do createdOn
+            const sorted = [...effectivelyPinned].sort((a, b) => {
+                // Manually pinned projects come first
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+
+                // Then sort by number of uncompleted to-dos (descending)
                 const aUncompleted = a.todos?.filter((t: any) => !t.completed).length ?? 0;
                 const bUncompleted = b.todos?.filter((t: any) => !t.completed).length ?? 0;
                 if (bUncompleted !== aUncompleted) return bUncompleted - aUncompleted;
+
                 // If tie, sort by most recent to-do createdOn
                 const aLatest = Math.max(...(a.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
                 const bLatest = Math.max(...(b.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
                 return bLatest - aLatest;
             });
+
             const top5 = sorted.slice(0, 5).map(p => p.name);
             if (top5.length > 0) setOpenedProjects(top5);
         }
