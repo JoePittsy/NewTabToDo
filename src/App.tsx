@@ -186,7 +186,16 @@ function App() {
             </div>
             <main
                 // id="MAIN"
-                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', overflowX: 'auto' }}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    overflowX: 'auto',
+                    padding: '2em 4em 3em 4em', // padding: top, right, bottom, left
+                    minHeight: '100vh',
+                    boxSizing: 'border-box'
+                }}
             >
                 {openProjectObjs.length === 0 ? (
                     <div style={{
