@@ -34,7 +34,7 @@ interface ProjectsContextType {
     addProject: (project: Project) => void;
     updateProject: (name: string, updates: Partial<Project>) => void;
     deleteProject: (name: string) => void;
-    reloadProjects: () => void;
+    reloadProjects: (autoOpenPinned?: boolean) => void;
     openedProjects: string[];
     openProject: (name: string) => void;
     closeProject: (name: string) => void;
@@ -66,13 +66,15 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [projects, setProjects] = useState<Project[]>([]);
     const [openedProjects, setOpenedProjects] = useState<string[]>([]);
   
-    const reloadProjects = useCallback(() => {
+    const reloadProjects = useCallback((autoOpenPinned: boolean = true) => {
         loadAllProjectsFromIDB().then(projects => {
             setProjects(projects);
-            // Auto-open pinned projects on load
-            const pinnedProjects = projects.filter(p => p.pinned).map(p => p.name);
-            if (pinnedProjects.length > 0) {
-                setOpenedProjects(prev => [...new Set([...prev, ...pinnedProjects])]);
+            // Only auto-open pinned projects on initial load, not on site changes
+            if (autoOpenPinned) {
+                const pinnedProjects = projects.filter(p => p.pinned).map(p => p.name);
+                if (pinnedProjects.length > 0) {
+                    setOpenedProjects(prev => [...new Set([...prev, ...pinnedProjects])]);
+                }
             }
         });
     }, []);
@@ -82,18 +84,18 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [reloadProjects]);
 
     const addProject = useCallback((project: Project) => {
-        putProject(deepCloneProject(project)).then(() => reloadProjects());
+        putProject(deepCloneProject(project)).then(() => reloadProjects(false));
     }, [reloadProjects]);
 
     const updateProject = useCallback((name: string, updates: Partial<Project>) => {
         const proj = projects.find(p => p.name === name);
         if (!proj) return;
         const updated = deepCloneProject({ ...proj, ...updates });
-        putProject(updated).then(() => reloadProjects());
+        putProject(updated).then(() => reloadProjects(false));
     }, [projects, reloadProjects]);
 
     const deleteProject = useCallback((name: string) => {
-        deleteProjectByName(name).then(() => reloadProjects());
+        deleteProjectByName(name).then(() => reloadProjects(false));
         setOpenedProjects(prev => prev.filter(n => n !== name));
     }, [reloadProjects]);
 
