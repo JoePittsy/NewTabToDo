@@ -157,10 +157,10 @@ function App() {
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             {/* Top-right buttons */}
 
-            <div className="fixed top-4 right-4 z-[10010] flex gap-2">
+            <div className="fixed top-2 right-4 z-[10010] flex gap-2 ">
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-slate-800 p-3 text-white shadow-xs hover:bg-slate-600 transition-colors duration-200"
                     onClick={() => {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
@@ -185,15 +185,18 @@ function App() {
                     }}
                     title="Import Project"
                 >
-                    📥
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAo0lEQVR4nO3TPQ6CMBiH8R7HAScccdd4Ekm8pN4ETE05ARMPIWFwkY++b9vBPvM//SVNa0wudcANeLOtHrhrwS37GoBaA/Zpwh8pYDmOLH8ceYPXg0OnPhTsgBKofg1CwA4o5u0pFtwBx3l3AD4x4G4rqg2XwnNeqeCn1lXbhW3wx2Vjwcm+0zc+oWciw6tleLW/hFsFt/GBr0K8AS674ZxRbgSeqR+wtpNp2QAAAABJRU5ErkJggg==" alt="import"></img>
+                
                 </button>
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-slate-800 p-3 text-white shadow-xs hover:bg-slate-600 transition-colors duration-200"
                     onClick={() => setCommandOpen(true)}
                     title="Command Palette"
                 >
                     <Bars4Icon aria-hidden="true" className="size-6" />
+                    <Bars4Icon aria-hidden="true" className="size-6" />
+
                 </button>
             </div>
             <main
@@ -202,8 +205,14 @@ function App() {
                 style={{
                     display: 'flex',
                     flexDirection: 'row',
-                    alignItems: openProjectObjs.length <= 2 ? 'center' : 'flex-start',
-                    justifyContent: openProjectObjs.length <= 2 ? 'center' : 'flex-start',
+                    //TO DO
+                    // The problem that we faced with is that if we just use center for alignment then a card will get cut off,
+                    // if we use just flex start cards will not be centered with small number of cards, need to think of a different solution to maintain center
+                    // of cards
+                    alignItems: openProjectObjs.length <= 4 ? 'center' : 'flex-start',
+                    justifyContent: openProjectObjs.length <= 4 ? 'center' : 'flex-start',
+                    // alignItems: 'center',
+                    // justifyContent: 'center',
                     overflowX: 'auto',
                     padding: '2em 4em 2em 4em', // padding: top, right, bottom, left
                     minHeight: '100vh',
