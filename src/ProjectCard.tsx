@@ -1,21 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import pinSvg from "./assets/pin.svg";
 import unpinSvg from "./assets/unpin.svg";
-import ReactDOM from "react-dom";
 import ToDoList, { ToDoItem } from "./ToDoList";
 import { DialogProvider } from "./DialogProvider";
 import EditProjectDialog from "./Edit Project/EditProjectDialog";
-import { useProjects, deepCloneProject, Project, AccordionState } from "./ProjectsProvider";
-import {
-    Menu as ContexifyMenu,
-    Item as ContexifyItem,
-    Separator as ContexifySeparator,
-    Submenu as ContexifySubmenu,
-    useContextMenu as useContexifyContextMenu,
-} from "react-contexify";
+import { useProjects, deepCloneProject, Project } from "./ProjectsProvider";
 import "react-contexify/dist/ReactContexify.css";
 import "./ProjectCard.css";
-import { useFormatLink, useSettings } from "./SettingsProvider";
+import { useFormatLink } from "./SettingsProvider";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,42 +29,20 @@ interface ProjectCardProps {
     dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
-const computeAccordionState = (project: Project): AccordionState => {
-    if (project.accordionState) {
-        return {
-            notesCollapsed: project.accordionState.notesCollapsed ?? false,
-            todosCollapsed: project.accordionState.todosCollapsed ?? false,
-        };
-    }
-
-    if (
-        typeof window !== "undefined" &&
-        typeof window.matchMedia === "function" &&
-        window.matchMedia("(max-width: 768px)").matches
-    ) {
-        return { notesCollapsed: true, todosCollapsed: true };
-    }
-
-    return { notesCollapsed: false, todosCollapsed: false };
-};
-
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) => {
     const dialog = useDialog();
     const { updateProject, deleteProject, closeProject, openProject } = useProjects();
     const [proj, setProj] = useState(() => deepCloneProject(project));
     const [notesValue, setNotesValue] = useState(() => project.notes ?? "");
-    const [accordionState, setAccordionState] = useState<AccordionState>(() => computeAccordionState(project));
     const [activeTab, setActiveTab] = useState<"notes" | "todos" | "completed">("todos");
     const notesSaveHandle = useRef<ReturnType<typeof setTimeout> | null>(null);
     const notesEditorRef = useRef<HTMLDivElement | null>(null);
     const projectNameRef = useRef(proj.name);
-    const MENU_ID = React.useId ? React.useId() : `project-card-menu-${project.name}`;
-    const { show: showMenu } = useContexifyContextMenu({ id: MENU_ID });
 
     const formatLink = useFormatLink();
 
     // Sync local state with prop changes
-    React.useEffect(() => {
+    useEffect(() => {
         if (notesSaveHandle.current) {
             clearTimeout(notesSaveHandle.current);
             notesSaveHandle.current = null;
@@ -81,14 +51,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
         const cloned = deepCloneProject(project);
         setProj(cloned);
         setNotesValue(cloned.notes ?? "");
-        setAccordionState(computeAccordionState(cloned));
     }, [project]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         projectNameRef.current = proj.name;
     }, [proj.name]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (notesEditorRef.current && notesEditorRef.current.innerHTML !== notesValue) {
             notesEditorRef.current.innerHTML = notesValue;
         }
@@ -158,39 +127,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     // Open all links in the project
     const openAllLinks = () => {
         if (!proj.iconLinks) return;
-        proj.iconLinks.forEach((link: any) => {
+        proj.iconLinks.forEach((link) => {
             if (link.link) {
                 window.open(formatLink(proj.name, link.link), "_blank");
             }
         });
     };
 
-    // Handle notes changes with debounce
-    const handleNotesChange = (e: React.FormEvent<HTMLDivElement>) => {
-        const newValue = e.currentTarget.innerHTML;
-        setNotesValue(newValue);
-
-        if (notesSaveHandle.current) {
-            clearTimeout(notesSaveHandle.current);
-        }
-
-        notesSaveHandle.current = setTimeout(() => {
-            setProj((prev: Project) => {
-                const updated = { ...prev, notes: newValue };
-                updateProject(prev.name, updated);
-                return updated;
-            });
-        }, 500);
-    };
-
     return (
         <div className="project-card">
-            {/* <div className="card bg-base-100 w-96 shadow-sm"> */}
-
-            {/* <button onClick={handleEdit}>Edit</button>
-        <button onClick={handleClose}>Close</button>
-        <button onClick={handleExport}>Export</button> */}
-
             <div
                 className="ProjectCardQuickActions pt-2 pr-5"
                 style={{ display: "flex", justifyContent: "flex-end", position: "relative", gap: "0em", zIndex: 1 }}
@@ -333,50 +278,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                     }}
                 >
                     <h2 className="project-name">{proj.name}</h2>
-                    <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-                        {/* <button
-              aria-label="Project menu"
-              className="project-header-btn"
-              onClick={e => {
-                e.stopPropagation();
-                showMenu({ event: e });
-              }}
-              onContextMenu={e => {
-                e.preventDefault();
-                showMenu({ event: e });
-              }}
-              tabIndex={0}
-            >
-              &#x22EE;
-            </button> */}
-                        {/* {dragHandleProps && (
-              <button
-                aria-label="Drag to reorder"
-                className="project-header-btn drag"
-                {...dragHandleProps}
-                tabIndex={0}
-              >
-                ≡
-              </button>
-            )} */}
-                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 0 }}></div>
                 </div>
             </div>
-            {/* <ContexifyMenu id={MENU_ID} animation="fade">
-        <ContexifySubmenu label="Links" disabled={proj.quickLinks.length === 0}>
-          <QuickLinksMenu links={proj.quickLinks} projectName={proj.name} />
-        </ContexifySubmenu>
-        <ContexifySeparator />
-        <ContexifyItem onClick={handleEdit}>
-          Edit Project
-        </ContexifyItem>
-        <ContexifyItem onClick={handleClose}>
-          Close Project
-        </ContexifyItem>
-        <ContexifyItem onClick={handleExport}>
-          Export Project
-        </ContexifyItem>
-      </ContexifyMenu> */}
 
             <div className="icon-links">
                 <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -395,11 +299,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                             const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
                             if (tooltip) tooltip.style.opacity = "0";
                         }}
-                        onFocus={(e) => {
+                        onFocus={() => {
                             const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
                             if (tooltip) tooltip.style.opacity = "1";
                         }}
-                        onBlur={(e) => {
+                        onBlur={() => {
                             const tooltip = document.getElementById(`all-links-tooltip-${proj.name}`);
                             if (tooltip) tooltip.style.opacity = "0";
                         }}
@@ -471,19 +375,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                         window.open(formatLink(project.name, link.link), "_blank");
                                     }
                                 }}
-                                onMouseEnter={(e) => {
+                                onMouseEnter={() => {
                                     const tooltip = document.getElementById(tooltipId);
                                     if (tooltip) tooltip.style.opacity = "1";
                                 }}
-                                onMouseLeave={(e) => {
+                                onMouseLeave={() => {
                                     const tooltip = document.getElementById(tooltipId);
                                     if (tooltip) tooltip.style.opacity = "0";
                                 }}
-                                onFocus={(e) => {
+                                onFocus={() => {
                                     const tooltip = document.getElementById(tooltipId);
                                     if (tooltip) tooltip.style.opacity = "1";
                                 }}
-                                onBlur={(e) => {
+                                onBlur={() => {
                                     const tooltip = document.getElementById(tooltipId);
                                     if (tooltip) tooltip.style.opacity = "0";
                                 }}
@@ -636,92 +540,3 @@ const ProjectCardWithProviders = (props: ProjectCardProps) => (
 );
 
 export default ProjectCardWithProviders;
-
-const MenuLinkItem: React.FC<{ link: QuickLink; projectName?: string }> = ({ link, projectName }) => {
-    const [submenuOpen, setSubmenuOpen] = useState(false);
-    const formatLink = useFormatLink();
-    const hasChildren = Array.isArray(link.children) && link.children.length > 0;
-    return (
-        <li
-            style={{
-                position: "relative",
-                padding: "0.3em 1.2em",
-                cursor: hasChildren ? "pointer" : undefined,
-                listStyle: "none",
-            }}
-            onMouseEnter={() => hasChildren && setSubmenuOpen(true)}
-            onMouseLeave={() => hasChildren && setSubmenuOpen(false)}
-        >
-            {hasChildren ? (
-                <>
-                    <span style={{ opacity: 0.7 }}>{link.label} ▶</span>
-                    {submenuOpen && (
-                        <ul
-                            style={{
-                                position: "absolute",
-                                top: 0,
-                                minWidth: 180,
-                                background: "#23272f",
-                                border: "1px solid #2d313a",
-                                borderRadius: 8,
-                                boxShadow: "0 4px 24px #0006",
-                                margin: 0,
-                                padding: "0.3em 0",
-                                zIndex: 10000,
-                                listStyle: "none",
-                            }}
-                        >
-                            {link.children!.map((child, i) => (
-                                <MenuLinkItem key={i} link={child} projectName={projectName} />
-                            ))}
-                        </ul>
-                    )}
-                </>
-            ) : link.url ? (
-                <a
-                    href={formatLink(projectName ?? "", link.url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#8ec6ff", textDecoration: "none" }}
-                >
-                    {link.label}
-                </a>
-            ) : (
-                link.label
-            )}
-        </li>
-    );
-};
-
-const QuickLinksMenu: React.FC<{ links: QuickLink[]; projectName: string }> = ({ links, projectName }) => {
-    const formatLink = useFormatLink();
-
-    return (
-        <>
-            {links.map((link, idx) => {
-                if (link.url && (!link.children || link.children.length === 0)) {
-                    return (
-                        <ContexifyItem
-                            key={idx}
-                            onClick={() => window.open(formatLink(projectName ?? "", link.url ?? ""), "_blank")}
-                        >
-                            {link.label}
-                        </ContexifyItem>
-                    );
-                } else if (link.children && link.children.length > 0) {
-                    return (
-                        <ContexifySubmenu key={idx} label={link.label}>
-                            <QuickLinksMenu links={link.children} projectName={projectName} />
-                        </ContexifySubmenu>
-                    );
-                } else {
-                    return (
-                        <ContexifyItem key={idx} disabled>
-                            {link.label}
-                        </ContexifyItem>
-                    );
-                }
-            })}
-        </>
-    );
-};
