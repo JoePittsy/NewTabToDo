@@ -203,17 +203,17 @@ function App() {
                 id="MAIN"
                 role="main"
                 style={{
-                    /* SCROLL CONTAINER */
+                    // Main Area
                     overflowX: 'auto',
                     overflowY: 'hidden',
-                    padding: '2em 0',           // vertical padding only (we'll pad the track for side breathing room)
+                    padding: '2em 0',           
                     minHeight: '100vh',
                     boxSizing: 'border-box',
-                    /* avoid centering here; let the track handle it */
+                    // Avoid centering here; let the track handle it 
                 }}
             >
                 <div
-                    /* FLEX TRACK */
+                    //flex track
                     style={{
                         display: 'flex',
                         flexDirection: 'row',
@@ -232,7 +232,6 @@ function App() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         width: '100%',
-                        // minHeight: '100vh',
                         color: '#aaa',
                         fontSize: '1.5rem',
                         fontWeight: 500,
@@ -250,7 +249,7 @@ function App() {
                         </ProjectSortableContext>
                     </ProjectDndContext>
                 )}
-                
+
                 </div>
             </main>
 

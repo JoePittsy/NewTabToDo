@@ -614,7 +614,6 @@ const MenuLinkItem: React.FC<{ link: QuickLink, projectName?: string }> = ({ lin
               style={{
                 position: 'absolute',
                 top: 0,
-                // left: '100%',
                 minWidth: 180,
                 background: '#23272f',
                 border: '1px solid #2d313a',
