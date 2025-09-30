@@ -6,7 +6,7 @@ import { Bars4Icon } from "@heroicons/react/24/outline";
 import FireworkEffect from "./FireworkEffect";
 import CommandPalette, { Action } from "./CommandPalette";
 import { useState, useEffect } from "react";
-import ProjectCard from "./ProjectCard";
+import ProjectCard from "./components/ProjectCard/ProjectCard";
 import "./App.css";
 import {
     DndContext as ProjectDndContext,
