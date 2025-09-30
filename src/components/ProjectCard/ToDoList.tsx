@@ -180,26 +180,10 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
         }
         return (
             <>
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: "0.75em",
-                        color: "#8ec6ff",
-                        padding: "0.1em 0.5em 0.3em 0em",
-                        minHeight: 22,
-                    }}
-                >
+                <div className="flex justify-between items-center text-xs text-blue-300 min-h-6">
                     <span>{timeOpen}</span>
                     <span
-                        style={{
-                            cursor: "pointer",
-                            color: "#e57373",
-                            fontWeight: 700,
-                            fontSize: "1.1em",
-                            marginLeft: 8,
-                        }}
+                        className="cursor-pointer text-red-400 font-bold text-base ml-2"
                         title="Remove to-do"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -211,65 +195,24 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
                 </div>
                 {showConfirm &&
                     ReactDOM.createPortal(
-                        <div
-                            style={{
-                                position: "fixed",
-                                top: 0,
-                                left: 0,
-                                width: "100vw",
-                                height: "100vh",
-                                background: "rgba(0,0,0,0.45)",
-                                zIndex: 99999,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <div
-                                style={{
-                                    background: "#23272f",
-                                    borderRadius: 12,
-                                    boxShadow: "0 8px 32px #000a",
-                                    padding: "2em 2em 1.5em",
-                                    minWidth: 320,
-                                    textAlign: "center",
-                                    border: "2px solid #e57373",
-                                }}
-                            >
-                                <div style={{ color: "#e57373", fontWeight: 700, fontSize: "1.1em", marginBottom: 16 }}>
+                        <div className="fixed inset-0 w-full h-full bg-black/45 z-99999 flex items-center justify-center">
+                            <div className="bg-zinc-800 border border-red-400 rounded-md p-8">
+                                <div className="mb-4 text-red-300 font-bold">
                                     Remove this to-do without completing it?
                                 </div>
-                                <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+                                <div className="flex gap-4 justify-center">
                                     <button
                                         onClick={() => {
                                             setShowConfirm(false);
                                             onDelete();
                                         }}
-                                        style={{
-                                            background: "#e57373",
-                                            color: "#fff",
-                                            border: "none",
-                                            fontWeight: 700,
-                                            fontSize: "1em",
-                                            cursor: "pointer",
-                                            padding: "0.5em 1.5em",
-                                            borderRadius: 6,
-                                        }}
+                                        className="bg-red-400 cursor-pointer text-white font-bold py-2 px-4 rounded"
                                     >
                                         Remove
                                     </button>
                                     <button
                                         onClick={() => setShowConfirm(false)}
-                                        style={{
-                                            background: "none",
-                                            color: "#8ec6ff",
-                                            border: "1.5px solid #8ec6ff",
-                                            fontWeight: 600,
-                                            fontSize: "1em",
-                                            cursor: "pointer",
-                                            padding: "0.5em 1.5em",
-                                            borderRadius: 6,
-                                        }}
+                                        className="bg-transparent cursor-pointer text-blue-300 border border-blue-400 font-semibold py-2 px-4 rounded"
                                     >
                                         Cancel
                                     </button>
@@ -283,34 +226,20 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
     }
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
-            {/* Only show input if not completed-only view */}
+        <div className="flex flex-col h-full overflow-hidden px-2">
             {!showOnlyCompleted && (
-                <form
-                    onSubmit={handleAdd}
-                    style={{ marginBottom: "1em", display: "flex", gap: "0.5em", flexShrink: 0 }}
-                >
+                <form onSubmit={handleAdd} className="flex gap-4 mb-4 shrink-0">
                     <input
                         type="text"
                         value={newTodo}
                         onChange={(e) => setNewTodo(e.target.value)}
                         placeholder="Add a new to-do..."
-                        style={{ padding: "0.5em", width: "100%", marginLeft: "4px", marginRight: "4px" }}
+                        className="border border-zinc-600 bg-zinc-800 rounded-md grow p-4 mx-2 py-2 text-base text-zinc-100 outline-none  w-7/12 transition-colors focus:border-zinc-400"
                     />
                 </form>
             )}
-            <div
-                style={{
-                    flex: 1,
-                    minHeight: 0,
-                    maxHeight: "auto",
-                    overflowY: "auto",
-                    // background: "#23272f",
-                    borderRadius: "8px",
-                    padding: "0.5em",
-                }}
-            >
-                <ul className="todo-list" style={{ margin: 0, padding: 0 }}>
+            <div className="p-4">
+                <ul>
                     {/* Show incomplete or completed based on prop */}
                     {!showOnlyCompleted ? (
                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -322,7 +251,6 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
                                             className={
                                                 todo.completed ? "completed" : todo._animating ? "animating" : ""
                                             }
-                                            isCompleted={todo.completed}
                                             onTextClick={() => {
                                                 if (confirmIdx !== idx) handleToggle(todos.indexOf(todo));
                                             }}
@@ -354,28 +282,12 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
                         completed.map((todo: ToDoItem, idx: number) => (
                             <li
                                 key={completedIds[idx]}
-                                className={todo.completed ? "completed" : ""}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    opacity: 1,
-                                    cursor: "pointer",
-                                    padding: "0.5em 0",
-                                    borderBottom: "1px solid #2c3440",
-                                }}
+                                className="flex items-center cursor-pointer border-b-zinc-300 p-2 hover:bg-zinc-700"
                                 onClick={() => handleToggle(todos.indexOf(todo))}
                                 title="Mark as incomplete"
                             >
-                                <span
-                                    style={{
-                                        textDecoration: "line-through",
-                                        color: "#8ec6ff",
-                                        flex: 1,
-                                    }}
-                                >
-                                    {todo.text}
-                                </span>
-                                <span style={{ fontSize: "0.8em", color: "#8ec6ff", marginLeft: 8 }}>
+                                <span className="line-through text-blue-300 flex-1">{todo.text}</span>
+                                <span className="text-blue-300 text-sm ml-2">
                                     {formatCompletedDate(todo.completedAt)}
                                 </span>
                             </li>
@@ -387,13 +299,11 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
     );
 };
 
-// Update SortableItem to accept drag handle props
 function SortableItem({
     id,
     children,
     className,
     style,
-    isCompleted,
     onTextClick,
     ...props
 }: {
@@ -401,7 +311,6 @@ function SortableItem({
     children: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
-    isCompleted: boolean;
     onTextClick: () => void;
 } & React.HTMLAttributes<HTMLLIElement>) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -424,26 +333,14 @@ function SortableItem({
             <span
                 {...listeners}
                 {...attributes}
-                style={{
-                    cursor: "grab",
-                    marginRight: "0.7em",
-                    fontSize: "1.2em",
-                    color: "#8ec6ff",
-                    userSelect: "none",
-                    display: "inline-flex",
-                    alignItems: "center",
-                }}
+                className="cursor-grab mr-4 text-xl text-blue-300 select-none inline-flex items-center"
                 tabIndex={0}
                 aria-label="Drag to reorder"
                 onClick={(e) => e.stopPropagation()}
             >
                 ≡
             </span>
-            {/* To-do text, click to toggle */}
-            <span
-                onClick={onTextClick}
-                style={{ flex: 1, minWidth: 0, overflowX: "auto", cursor: isCompleted ? "pointer" : "pointer" }}
-            >
+            <span onClick={onTextClick} className={`flex-1 min-w-0 overflow-x-auto cursor-pointer`}>
                 {children}
             </span>
         </li>

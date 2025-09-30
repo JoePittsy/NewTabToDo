@@ -6,7 +6,6 @@ import { DialogProvider } from "../../DialogProvider";
 import EditProjectDialog from "../../Edit Project/EditProjectDialog";
 import { useProjects, deepCloneProject, Project } from "../../ProjectsProvider";
 import "react-contexify/dist/ReactContexify.css";
-import "./ProjectCard.css";
 import { useFormatLink } from "../../SettingsProvider";
 
 import { useDialog } from "../../useDialog";
@@ -128,7 +127,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
     return (
         <>
-            <div className="project-card">
+            <div className="project-card flex flex-col overflow-hidden w-[520px] h-[80vh] min-h-0 max-h-[80vh] m-8 p-0 text-left text-lg text-zinc-100 bg-zinc-900/70 backdrop-blur-md rounded-xl border border-zinc-700 shadow-lg transition-shadow duration-200 hover:shadow-2xl">
                 <div
                     className="ProjectCardQuickActions pt-2 pr-5"
                     style={{ display: "flex", justifyContent: "flex-end", position: "relative", gap: "0em", zIndex: 1 }}
@@ -137,7 +136,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                         <button
                             style={{ marginRight: "6em" }}
                             aria-label="Drag to reorder"
-                            className="project-header-btn drag"
+                            className="bg-transparent border-none text-zinc-400  px-[0.1em] rounded-md mr-0 cursor-grab ml-0"
                             {...dragHandleProps}
                             tabIndex={0}
                         >
@@ -151,25 +150,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
 
                     <ProjectQuickLinks proj={proj} formatLink={formatLink} />
 
-                    <button onClick={handleEdit} className="project-quick-action-btn">
+                    <button
+                        onClick={handleEdit}
+                        className="flex items-center justify-center bg-transparent border-none p-1 rounded cursor-pointer all duration-200 ease-in-out hover:bg-white/10 hover:scale-105"
+                    >
                         <img
                             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAuElEQVR4nO2Uuw3CMBRFXbJBBOtAAUyTJWigJqswRmgQSRtmICUHObKVxAJ/Ypc+5fPTPfaNFCESA6yBO3BOnT0AVIxcROKbl8AKuClBbS4dgRd+9MBuEt6o+UlJrnJuCmLDNeW/Zw4E1FIAD+a0wCZaQGj4VOBRSxEc7hD0RudP47zRH1TvLa4Ie/hWXiZW8DNcnb3lMJWgNTsHPtECG1ngJAuSCHx/1zY6m+AgF1hOB+zdb82IkS9ivt889VHIRQAAAABJRU5ErkJggg=="
                             alt="edit"
-                            className="project-quick-action-icon"
+                            className="h-4 w-4"
                         ></img>
                     </button>
-                    <button onClick={handleClose} className="project-quick-action-btn">
+                    <button
+                        onClick={handleClose}
+                        className="flex items-center justify-center bg-transparent border-none p-1 rounded cursor-pointer all duration-200 ease-in-out hover:bg-white/10 hover:scale-105"
+                    >
                         <img
                             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABS0lEQVR4nO2WO04DMRCG9xIUPIIoKUIVOsIBkABxDvLgLHQgEAUlfQg3YbkACLqwdCT60EiOZKH17KzXUVLkl1ay7P317cx6xs6ytVZNwC4wAF6AHPhxT+7m+kArJXAbuAWmVGsGPAF7TaEXQEF9fQPnsdArF0GsxDuMiXTWAOrDbZEDO5Hp1dK+ZQE/kF53lpIJ7d4j4BD4LFmTuQ7QDXinkkkNLHUaUse90/4Hl3HbrcmHhdTTwGPF6APm8LK5kEYa+E0xlsGtUFGugS27+Qs48Dz7wIfBVywC/G7wTVYy1eNlba7+AsvpUgO3lAbSrWggsnYc8P6qDcTB70mvGxXqHfzS2FNpAmxWgh38xHjjsByLZyaoBx8muAgMakHnkkM8Mu2S3tOsiYAN4NrtTEuUj+Z/WuNm0gOegVfXXgs3HkmdVpbMWtkS9AcczgesBTVL2QAAAABJRU5ErkJggg=="
                             alt="cancel"
-                            className="project-quick-action-icon"
+                            className="h-4 w-4"
                         ></img>
                     </button>
-                    <button onClick={handleExport} className="project-quick-action-btn">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center justify-center bg-transparent border-none p-1 rounded cursor-pointer all duration-200 ease-in-out hover:bg-white/10 hover:scale-105"
+                    >
                         <img
                             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nO3Wu2sVQRiG8fUCUYOSJp0xIEgI1raS1ElQQfAPMNimsEwjKcQyWGuRQAiBdLm0SfACBluFaJVOtPCSRtT4k4E5sBmyu+csew4IedpvZp7dd7+Z2Sw74X8HZzCOp9jHi27KzmEKz/HFUfabll2IskV8V8x8E7JBTGMDPwtEf5PaWF3ZFTzAGn4r5wBLUS7GfrYT2VXM4GVukSo+4m4S+7N2ZNfxCO91zmZMJp07USXdVo+QxlyIE+tJ7Ufo9irx6xrSEOntOD/IU1baifk8FjqQfgifJs69VdAH9yrFuQcI3furQhoiHYjjR/DtmDFhO11qWxwXu4lPxywW3uoJTsdxF/Gu6OE6krbAZbxJGuVOrn4KqyWp3M/qgr6wD7GH0aQWtl0Rf8IJV1vcIt0SmMRhiXgnaxpcw1flzDQt7StppnwDDjcqDsT7toy3WRcv/N0S8WxXxAEM4XOB+Ej3N078p0rv5r2uSlvgYSJ+nPUKLOfEN3op7scrbIVjtGfiE7I2+AcEHXWoJXkgBAAAAABJRU5ErkJggg=="
                             alt="filled-sent"
-                            className="project-quick-action-icon"
+                            className="h-4 w-4"
                         ></img>
                     </button>
 
@@ -183,72 +191,49 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                 return updated;
                             });
                         }}
-                        className="project-quick-action-btn"
+                        className="flex items-center justify-center bg-transparent border-none p-1 rounded cursor-pointer all duration-200 ease-in-out hover:bg-white/10 hover:scale-105"
                     >
                         {proj.pinned ? (
-                            <img src={unpinSvg} alt="Pinned" className="project-quick-action-icon" />
+                            <img src={unpinSvg} alt="Pinned" className="h-4 w-4" />
                         ) : (
-                            <img src={pinSvg} alt="Unpinned" className="project-quick-action-icon" />
+                            <img src={pinSvg} alt="Unpinned" className="h-4 w-4" />
                         )}
                     </button>
                 </div>
 
-                <div className="project-header">
+                <div className="flex items-center -mt-4 pl-8 gap-5">
                     {proj.logo ? (
                         <img
                             src={proj.logo}
                             alt={proj.name + " logo"}
-                            className="project-logo"
-                            style={{ objectFit: "cover" }}
+                            className="w-14 h-14 rounded-lg bg-[var(--logo-bg,#fff)] object-cover shadow-md "
                         />
                     ) : (
                         <div
-                            className="project-logo"
-                            style={{
-                                background: proj.logoBackgroundColor || "#6c757d",
-                                color: "#fff",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontWeight: "bold",
-                                fontSize: "1.8em",
-                                border: "1px solid #e0e0e0",
-                                boxShadow: "0 1px 4px #0002",
-                                borderRadius: "0.5em",
-                                width: "56px",
-                                height: "56px",
-                                minWidth: "56px",
-                                minHeight: "56px",
-                                maxWidth: "56px",
-                                maxHeight: "56px",
-                                aspectRatio: "1 / 1",
-                            }}
+                            className="
+                                    flex items-center justify-center 
+                                    font-bold text-[1.8em] text-white 
+                                    shadow-sm rounded-md 
+                                    w-14 h-14 min-w-14 min-h-14 max-w-14 max-h-14 aspect-square
+                                "
+                            style={{ background: proj.logoBackgroundColor || "#6c757d" }}
                         >
                             {proj.name.charAt(0).toUpperCase()}
                         </div>
                     )}
-                    <div
-                        className="project-title-row"
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "1.2em",
-                            justifyContent: "space-between",
-                            width: "100%",
-                        }}
-                    >
-                        <h2 className="project-name">{proj.name}</h2>
-                        <div style={{ display: "flex", alignItems: "center", gap: 0 }}></div>
+
+                    <div className="w-full">
+                        <h2 className="text-2xl font-bold">{proj.name}</h2>
                     </div>
                 </div>
 
-                <div className="icon-links">
+                <div className="h-14 pl-8 pt-2 flex items-center gap-0.5">
                     <div
                         style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}
                     >
                         <button
                             onClick={openAllLinks}
-                            className="icon-link"
+                            className="flex flex-col items-center justify-center no-underline min-w-11 min-h-11 rounded-lg transition-colors duration-150 p-1 bg-transparent border-none outline-none cursor-pointer relative"
                             tabIndex={0}
                             aria-describedby={`all-links-tooltip-${proj.name}`}
                             onMouseEnter={(e) => {
@@ -273,11 +258,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                             <img
                                 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAs0lEQVR4nO3SMQ6DMAyFYS4B6hFQT5JztwNDO5WheypVvcWPQJkQCXYwRa3yRkT8OY6rquQXA1yJpzsKZjd41kQNPL4KAw3QB68XwYADXujyAc4RtJHC3hIN30Xw+k/rb/oETqqaZMCxm862/WIKJ8Y7jV/T/ZQt4wVa4L0LTGK8YeEwh0kskqb5HPi2dFNNjVy4A+5LqLSGzSGLGhQ4IwUW5UjYYxOvhZ0BPp53ykGV/FkG5WgPFpZBmkQAAAAASUVORK5CYII="
                                 alt="external-link"
-                                className="icon-link-img"
+                                className="h-8 w-8 flex items-center justify-center rounded-md border border-gray-300 shadow-sm transition-transform duration-150 mb-0.5 bg-white object-contain"
                                 style={{ background: "rgba(255, 255, 255, 0.1)", border: 0 }}
                             />
                         </button>
-                        <span id={`all-links-tooltip-${proj.name}`} className="icon-tooltip" role="tooltip">
+                        <span
+                            id={`all-links-tooltip-${proj.name}`}
+                            className="pointer-events-none opacity-0 absolute bottom-10 left-1/2 -translate-x-1/2 
+bg-zinc-800 text-zinc-100 rounded-md px-2.5 py-1 text-[0.95em] font-medium 
+whitespace-pre shadow-lg z-[100] transition-opacity duration-75 
+max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
+"
+                            role="tooltip"
+                        >
                             Open all links
                         </span>
                     </div>
@@ -290,7 +283,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                 <img
                                     src={link.icon}
                                     alt={link.title || "Icon"}
-                                    className="icon-link-img"
+                                    className="icon-h-8 w-8 flex items-center justify-center rounded-md border border-gray-300 shadow-sm transition-transform duration-150 mb-0.5 bg-white object-contain"
                                     onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.12)")}
                                     onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
                                 />
@@ -306,7 +299,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                     : proj.logoBackgroundColor || "#6c757d";
                             displayContent = (
                                 <div
-                                    className="icon-link-text"
+                                    className="h-8 w-8 flex items-center justify-center rounded-md border border-gray-300 shadow-sm transition-transform duration-150 font-bold text-lg mb-0.5 bg-gray-500 text-white"
                                     style={{ background: bgColor, color: "#fff" }}
                                     onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.12)")}
                                     onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -329,7 +322,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                     href={formatLink(project.name, link.link)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="icon-link"
+                                    className="flex flex-col items-center justify-center no-underline min-w-11 min-h-11 rounded-lg transition-colors duration-150 p-1 bg-transparent border-none outline-none cursor-pointer relative"
                                     tabIndex={0}
                                     aria-describedby={tooltipId}
                                     onKeyDown={(e) => {
@@ -355,7 +348,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                     }}
                                 >
                                     {displayContent}
-                                    <span id={tooltipId} className="icon-tooltip" role="tooltip">
+                                    <span
+                                        id={tooltipId}
+                                        className="pointer-events-none opacity-0 absolute bottom-10 left-1/2 -translate-x-1/2 
+bg-zinc-800 text-zinc-100 rounded-md px-2.5 py-1 text-[0.95em] font-medium 
+whitespace-pre shadow-lg z-[100] transition-opacity duration-75 
+max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
+"
+                                        role="tooltip"
+                                    >
                                         {link.title || link.link}
                                     </span>
                                 </a>
@@ -415,7 +416,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                             }}
                         >
                             <div
-                                className="project-todos pt-4"
+                                className="flex flex-col overflow-hidden pt-4"
                                 style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
                             >
                                 <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
@@ -433,7 +434,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                             }}
                         >
                             <div
-                                className="project-todos pt-4"
+                                className="flex flex-col overflow-hidden pt-4"
                                 style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
                             >
                                 <button
@@ -442,8 +443,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                         setProj((prev: Project) => ({ ...prev, todos: updatedTodos }));
                                         updateProject(proj.name, { todos: updatedTodos });
                                     }}
-                                    className="clear-all-btn"
-                                    style={{ margin: "auto" }}
+                                    className="bg-red-500 text-white border-none rounded px-3 py-1 cursor-pointer font-semibold m-auto"
                                 >
                                     Clear All
                                 </button>
@@ -484,7 +484,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                                             });
                                         }, 500);
                                     }}
-                                    className="project-notes-editor"
+                                    className="flex-1 p-2 min-h-[100px] border border-zinc-700 rounded-lg bg-zinc-800"
                                     style={{ height: "100%", resize: "none" }}
                                 />
                             </div>
