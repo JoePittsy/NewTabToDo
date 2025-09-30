@@ -7,7 +7,7 @@ import { ToDoItem } from './ToDoList';
 import { DialogProvider, useDialog } from './DialogProvider';
 import EditProjectDialog from './Edit Project/EditProjectDialog';
 import CommandPalette from './CommandPalette';
-import { ProjectsProvider, useProjects, Project, IconLink } from './ProjectsProvider';
+import { ProjectsProvider, useProjects, Project, IconLink, isProjectEffectivelyPinned } from './ProjectsProvider';
 import {
     DndContext as ProjectDndContext,
     closestCenter as projectClosestCenter,
@@ -44,12 +44,15 @@ function App() {
             }
         }
         window.addEventListener('keydown', onKeyDown);
-        // Horizontal scroll on wheel for main container
-        const main = document.getElementsByTagName('html')[0];
+
+        // Horizontal scroll wheel binding for MAIN container only when not over ProjectCards
+        const main = document.getElementById('MAIN');
         function onWheel(e: WheelEvent) {
             if (!main) return;
-            if (e.deltaY > 0) main.scrollLeft += 100;
-            else main.scrollLeft -= 100;
+            // Ignore if hovering directly over a ProjectCard
+            if ((e.target as HTMLElement).closest('.project-card')) return;
+            // Scroll horizontally using vertical wheel movement
+            main.scrollLeft += e.deltaY;
         }
         if (main) main.addEventListener('wheel', onWheel);
         return () => {
@@ -59,20 +62,29 @@ function App() {
     }, []);
 
     useEffect(() => {
-        // On mount, open up to 5 projects with the most uncompleted to-dos
+        // On mount, open up to 5 effectively pinned projects (manually pinned OR with todos)
         if (openedProjects.length === 0 && projects.length > 0) {
-            // Only consider projects with at least one uncompleted to-do
-            const withUncompleted = projects.filter(p => (p.todos?.some((t: any) => !t.completed)));
-            // Sort by number of uncompleted to-dos (descending), then by most recent to-do createdOn
-            const sorted = [...withUncompleted].sort((a, b) => {
+            // Only consider effectively pinned projects
+            const effectivelyPinned = projects.filter(p => isProjectEffectivelyPinned(p));
+
+            // Sort by: manually pinned first, then by number of uncompleted to-dos (descending),
+            // then by most recent to-do createdOn
+            const sorted = [...effectivelyPinned].sort((a, b) => {
+                // Manually pinned projects come first
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+
+                // Then sort by number of uncompleted to-dos (descending)
                 const aUncompleted = a.todos?.filter((t: any) => !t.completed).length ?? 0;
                 const bUncompleted = b.todos?.filter((t: any) => !t.completed).length ?? 0;
                 if (bUncompleted !== aUncompleted) return bUncompleted - aUncompleted;
+
                 // If tie, sort by most recent to-do createdOn
                 const aLatest = Math.max(...(a.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
                 const bLatest = Math.max(...(b.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
                 return bLatest - aLatest;
             });
+
             const top5 = sorted.slice(0, 5).map(p => p.name);
             if (top5.length > 0) setOpenedProjects(top5);
         }
@@ -144,10 +156,11 @@ function App() {
             ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             {/* Top-right buttons */}
-            <div className="fixed top-4 right-4 z-[10010] flex gap-2">
+
+            <div className="fixed top-2 right-4 z-[10010] flex gap-2 ">
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-zinc-800 p-3 text-white shadow-xs hover:bg-zinc-600 transition-colors duration-200"
                     onClick={() => {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
@@ -172,21 +185,46 @@ function App() {
                     }}
                     title="Import Project"
                 >
-                    📥
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAo0lEQVR4nO3TPQ6CMBiH8R7HAScccdd4Ekm8pN4ETE05ARMPIWFwkY++b9vBPvM//SVNa0wudcANeLOtHrhrwS37GoBaA/Zpwh8pYDmOLH8ceYPXg0OnPhTsgBKofg1CwA4o5u0pFtwBx3l3AD4x4G4rqg2XwnNeqeCn1lXbhW3wx2Vjwcm+0zc+oWciw6tleLW/hFsFt/GBr0K8AS674ZxRbgSeqR+wtpNp2QAAAABJRU5ErkJggg==" alt="import"></img>
+                
                 </button>
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-600 p-3 text-white shadow-xs hover:bg-slate-800 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-zinc-800 p-3 text-white shadow-xs hover:bg-zinc-600 transition-colors duration-200"
                     onClick={() => setCommandOpen(true)}
                     title="Command Palette"
                 >
                     <Bars4Icon aria-hidden="true" className="size-6" />
+                    
+
                 </button>
             </div>
             <main
                 id="MAIN"
-                style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', overflowX: 'auto', minHeight: '60vh' }}
+                role="main"
+                style={{
+                    // Main Area
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    padding: '2em 0',           
+                    minHeight: '100vh',
+                    boxSizing: 'border-box',
+                    // Avoid centering here; let the track handle it 
+                }}
             >
+                <div
+                    //flex track
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: '1rem',
+                        alignItems: 'center',
+                        width: 'max-content',     // track is only as wide as its children
+                        margin: '0 auto',         // centers the track WHEN it doesn't overflow
+                        padding: '0 4em',         // left/right breathing room without clipping first/last card
+                        boxSizing: 'border-box',
+                    }}
+                >
                 {openProjectObjs.length === 0 ? (
                     <div style={{
                         display: 'flex',
@@ -194,7 +232,6 @@ function App() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         width: '100%',
-                        minHeight: '50vh',
                         color: '#aaa',
                         fontSize: '1.5rem',
                         fontWeight: 500,
@@ -212,6 +249,8 @@ function App() {
                         </ProjectSortableContext>
                     </ProjectDndContext>
                 )}
+
+                </div>
             </main>
 
         </>
