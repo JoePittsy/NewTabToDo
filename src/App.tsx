@@ -203,22 +203,28 @@ function App() {
                 id="MAIN"
                 role="main"
                 style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    //TO DO
-                    // The problem that we faced with is that if we just use center for alignment then a card will get cut off,
-                    // if we use just flex start cards will not be centered with small number of cards, need to think of a different solution to maintain center
-                    // of cards
-                    alignItems: openProjectObjs.length <= 4 ? 'center' : 'flex-start',
-                    justifyContent: openProjectObjs.length <= 4 ? 'center' : 'flex-start',
-                    // alignItems: 'center',
-                    // justifyContent: 'center',
+                    /* SCROLL CONTAINER */
                     overflowX: 'auto',
-                    padding: '2em 4em 2em 4em', // padding: top, right, bottom, left
+                    overflowY: 'hidden',
+                    padding: '2em 0',           // vertical padding only (we'll pad the track for side breathing room)
                     minHeight: '100vh',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    /* avoid centering here; let the track handle it */
                 }}
             >
+                <div
+                    /* FLEX TRACK */
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: '1rem',
+                        alignItems: 'center',
+                        width: 'max-content',     // track is only as wide as its children
+                        margin: '0 auto',         // centers the track WHEN it doesn't overflow
+                        padding: '0 4em',         // left/right breathing room without clipping first/last card
+                        boxSizing: 'border-box',
+                    }}
+                >
                 {openProjectObjs.length === 0 ? (
                     <div style={{
                         display: 'flex',
@@ -244,6 +250,8 @@ function App() {
                         </ProjectSortableContext>
                     </ProjectDndContext>
                 )}
+                
+                </div>
             </main>
 
         </>
