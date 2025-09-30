@@ -1,6 +1,6 @@
 import { ProjectsProvider, useProjects, Project, isProjectEffectivelyPinned } from "./ProjectsProvider";
 import EditProjectDialog from "./Edit Project/EditProjectDialog";
-import { DialogProvider, useDialog } from "./DialogProvider";
+import { DialogProvider } from "./DialogProvider";
 import { SettingsProvider } from "./SettingsProvider";
 import { Bars4Icon } from "@heroicons/react/24/outline";
 import FireworkEffect from "./FireworkEffect";
@@ -23,6 +23,7 @@ import {
     useSortable as useProjectSortable,
     verticalListSortingStrategy as projectVerticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useDialog } from "./useDialog";
 
 function App() {
     const { projects, addProject, openedProjects, openProject, setOpenedProjects } = useProjects();

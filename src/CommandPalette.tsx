@@ -21,9 +21,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useProjects } from "./ProjectsProvider";
-import { useDialog } from "./DialogProvider";
 import HelpDialog from "./HelpDialog";
 import SettingsDialog from "./SettingsDialog";
+import { useDialog } from "./useDialog";
 
 export interface Action {
     name: string;
