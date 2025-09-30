@@ -19,7 +19,7 @@ import {
     XCircleIcon,
     InformationCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useProjects } from "./ProjectsProvider";
 import { useDialog } from "./DialogProvider";
 import HelpDialog from "./HelpDialog";
@@ -67,12 +67,10 @@ export default function CommandPalette({
         })
         .sort((a, b) => b.lastNote - a.lastNote);
 
-    const filteredProjects =
-        query === ""
-            ? []
-            : unopened.filter((project) => {
-                  return project.name.toLowerCase().includes(query.toLowerCase());
-              });
+    const filteredProjects = useMemo(
+        () => unopened.filter((project) => project.name.toLowerCase().includes(query.toLowerCase())),
+        [query, unopened]
+    );
 
     // Define quickActions here so it's always in scope
     const quickActions: Action[] = [
@@ -375,14 +373,7 @@ export default function CommandPalette({
                                                         }}
                                                     >
                                                         {/* Checkmark for selected */}
-                                                        <span
-                                                            style={{
-                                                                width: 22,
-                                                                display: "inline-flex",
-                                                                alignItems: "center",
-                                                                justifyContent: "center",
-                                                            }}
-                                                        >
+                                                        <span className="inline-flex items-center justify-center w-6">
                                                             {selectedProjects.includes(project.name) && (
                                                                 <CheckIcon
                                                                     className="w-5 h-5 text-blue-400"
@@ -394,8 +385,7 @@ export default function CommandPalette({
                                                             <img
                                                                 src={project.logo}
                                                                 alt={project.name + " logo"}
-                                                                className="size-6 flex-none rounded bg-white object-contain border border-gray-300"
-                                                                style={{ width: 24, height: 24 }}
+                                                                className="size-6 flex-none rounded bg-white object-contain border border-gray-300 w-6 h-6"
                                                             />
                                                         ) : (
                                                             <FolderIcon
@@ -405,8 +395,7 @@ export default function CommandPalette({
                                                         )}
                                                         <span className="ml-3 flex-auto truncate">{project.name}</span>
                                                         <span
-                                                            className="ml-3 text-xs text-gray-400"
-                                                            style={{ minWidth: 110, textAlign: "right" }}
+                                                            className="ml-3 text-xs text-gray-400 text-right min-w-[110px]"
                                                             title={
                                                                 project.lastNote > 0
                                                                     ? new Date(project.lastNote).toLocaleString()
@@ -449,8 +438,7 @@ export default function CommandPalette({
                                                         <img
                                                             src={project.logo}
                                                             alt={project.name + " logo"}
-                                                            className="size-6 flex-none rounded bg-white object-contain border border-gray-300"
-                                                            style={{ width: 24, height: 24 }}
+                                                            className="size-6 flex-none rounded bg-white object-contain border border-gray-300 w-6 h-6"
                                                         />
                                                     ) : (
                                                         <FolderIcon
