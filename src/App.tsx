@@ -4,7 +4,7 @@ import { DialogProvider, useDialog } from "./DialogProvider";
 import { SettingsProvider } from "./SettingsProvider";
 import { Bars4Icon } from "@heroicons/react/24/outline";
 import FireworkEffect from "./FireworkEffect";
-import CommandPalette from "./CommandPalette";
+import CommandPalette, { Action } from "./CommandPalette";
 import { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import "./App.css";
@@ -14,6 +14,8 @@ import {
     PointerSensor as ProjectPointerSensor,
     useSensor as useProjectSensor,
     useSensors as useProjectSensors,
+    DragOverEvent,
+    DragEndEvent,
 } from "@dnd-kit/core";
 import {
     arrayMove as projectArrayMove,
@@ -71,13 +73,13 @@ function App() {
                 if (!a.pinned && b.pinned) return 1;
 
                 // Then sort by number of uncompleted to-dos (descending)
-                const aUncompleted = a.todos?.filter((t: any) => !t.completed).length ?? 0;
-                const bUncompleted = b.todos?.filter((t: any) => !t.completed).length ?? 0;
+                const aUncompleted = a.todos?.filter((t) => !t.completed).length ?? 0;
+                const bUncompleted = b.todos?.filter((t) => !t.completed).length ?? 0;
                 if (bUncompleted !== aUncompleted) return bUncompleted - aUncompleted;
 
                 // If tie, sort by most recent to-do createdOn
-                const aLatest = Math.max(...(a.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
-                const bLatest = Math.max(...(b.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
+                const aLatest = Math.max(...(a.todos?.map((t) => t.createdOn || 0) ?? [0]));
+                const bLatest = Math.max(...(b.todos?.map((t) => t.createdOn || 0) ?? [0]));
                 return bLatest - aLatest;
             });
 
@@ -85,11 +87,11 @@ function App() {
             if (top5.length > 0) setOpenedProjects(top5);
         }
         // Only run when projects change or openedProjects change
-    }, [projects]);
+    }, [projects, openedProjects.length, setOpenedProjects]);
 
     useEffect(() => {
         // Listen for custom event to trigger fireworks globally
-        function onFireworkEvent(e: any) {
+        function onFireworkEvent() {
             setFireworks((fw) => [...fw, Date.now() + Math.random()]);
         }
         window.addEventListener("firework", onFireworkEvent);
@@ -117,12 +119,12 @@ function App() {
         ));
     }
 
-    function handlePaletteChange(item: any) {
+    function handlePaletteChange(item: Action) {
         if (item && (item.query || item.query === "")) {
             setCommandOpen(false);
             setTimeout(() => handleCreateProject(item.query), 0);
         } else if (item && item.url) {
-            window.location = item.url;
+            window.location.href = item.url;
         }
     }
 
@@ -131,18 +133,18 @@ function App() {
     const openProjectObjs = openedProjects
         .map((name) => projects.find((p) => p.name === name))
         .filter((p): p is NonNullable<typeof p> => Boolean(p));
-    function handleDragEnd(event: any) {
+    function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
         setDropTargetId(null); // Clear snap preview
         if (!over || active.id === over.id) return;
-        const oldIndex = openedProjects.indexOf(active.id);
-        const newIndex = openedProjects.indexOf(over.id);
+        const oldIndex = openedProjects.indexOf(active.id as string);
+        const newIndex = openedProjects.indexOf(over.id as string);
         if (oldIndex === -1 || newIndex === -1) return;
         setOpenedProjects(projectArrayMove(openedProjects, oldIndex, newIndex));
     }
-    function handleDragOver(event: any) {
+    function handleDragOver(event: DragOverEvent) {
         const { over } = event;
-        setDropTargetId(over?.id ?? null);
+        setDropTargetId((over?.id as string) ?? null);
     }
 
     return (
@@ -166,8 +168,8 @@ function App() {
                         const fileInput = document.createElement("input");
                         fileInput.type = "file";
                         fileInput.accept = ".json";
-                        fileInput.onchange = (e: any) => {
-                            const file = e.target.files?.[0];
+                        fileInput.onchange = (e: Event) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
                             if (file) {
                                 const reader = new FileReader();
                                 reader.onload = (event) => {
@@ -266,7 +268,7 @@ function App() {
                                 items={openedProjects}
                                 strategy={projectVerticalListSortingStrategy}
                             >
-                                {openProjectObjs.map((project, idx) => (
+                                {openProjectObjs.map((project) => (
                                     <SortableProjectCard
                                         key={project.name}
                                         id={project.name}
@@ -284,7 +286,7 @@ function App() {
 }
 
 // Sortable wrapper for ProjectCard
-function SortableProjectCard({ id, project, isDropTarget }: { id: string; project: any; isDropTarget?: boolean }) {
+function SortableProjectCard({ id, project, isDropTarget }: { id: string; project: Project; isDropTarget?: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useProjectSortable({ id });
     // Only use drag handle on a dedicated element, not the whole card
     // Compute transform and transition for pop effect
