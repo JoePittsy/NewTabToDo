@@ -15,6 +15,9 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { useDialog } from "./useDialog";
 
@@ -170,21 +173,52 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                         <DropdownMenuLabel>Project Links</DropdownMenuLabel>
                         <DropdownMenuSeparator className="h-px bg-zinc-600 my-1" />
                         {proj.quickLinks && proj.quickLinks.length > 0 ? (
-                            proj.quickLinks.map((link, idx) =>
-                                link.url ? (
-                                    <DropdownMenuItem
-                                        className="data-[highlighted]:bg-zinc-600 rounded"
-                                        key={idx}
-                                        onClick={() => window.open(formatLink(proj.name, link.url!), "_blank")}
-                                    >
-                                        {link.label}
-                                    </DropdownMenuItem>
-                                ) : (
-                                    <DropdownMenuItem key={idx} disabled>
-                                        {link.label}
-                                    </DropdownMenuItem>
-                                )
-                            )
+                            proj.quickLinks.map((link, idx) => {
+                                if (link.url) {
+                                    return (
+                                        <DropdownMenuItem
+                                            key={idx}
+                                            className="data-[highlighted]:bg-zinc-600 rounded"
+                                            onClick={() => window.open(formatLink(proj.name, link.url!), "_blank")}
+                                        >
+                                            {link.label}
+                                        </DropdownMenuItem>
+                                    );
+                                } else if (link.children && link.children.length > 0) {
+                                    return (
+                                        <DropdownMenuSub key={idx}>
+                                            <DropdownMenuSubTrigger className="data-[highlighted]:bg-zinc-600 rounded">
+                                                {link.label}
+                                            </DropdownMenuSubTrigger>
+                                            <DropdownMenuSubContent className="bg-zinc-800 border-zinc-600 rounded-selector shadow-lg">
+                                                {link.children.map((child, cidx) =>
+                                                    child.url ? (
+                                                        <DropdownMenuItem
+                                                            key={cidx}
+                                                            className="data-[highlighted]:bg-zinc-600 rounded"
+                                                            onClick={() =>
+                                                                window.open(formatLink(proj.name, child.url!), "_blank")
+                                                            }
+                                                        >
+                                                            {child.label}
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        <DropdownMenuItem key={cidx} disabled>
+                                                            {child.label}
+                                                        </DropdownMenuItem>
+                                                    )
+                                                )}
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuSub>
+                                    );
+                                } else {
+                                    return (
+                                        <DropdownMenuItem key={idx} disabled>
+                                            {link.label}
+                                        </DropdownMenuItem>
+                                    );
+                                }
+                            })
                         ) : (
                             <DropdownMenuItem disabled>No links</DropdownMenuItem>
                         )}
