@@ -160,7 +160,7 @@ function App() {
             <div className="fixed top-2 right-4 z-[10010] flex gap-2 ">
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-800 p-3 text-white shadow-xs hover:bg-slate-600 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-zinc-800 p-3 text-white shadow-xs hover:bg-zinc-600 transition-colors duration-200"
                     onClick={() => {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
@@ -190,12 +190,12 @@ function App() {
                 </button>
                 <button
                     type="button"
-                    className="cursor-pointer rounded-full bg-slate-800 p-3 text-white shadow-xs hover:bg-slate-600 transition-colors duration-200"
+                    className="cursor-pointer rounded-full bg-zinc-800 p-3 text-white shadow-xs hover:bg-zinc-600 transition-colors duration-200"
                     onClick={() => setCommandOpen(true)}
                     title="Command Palette"
                 >
                     <Bars4Icon aria-hidden="true" className="size-6" />
-                    <Bars4Icon aria-hidden="true" className="size-6" />
+                    
 
                 </button>
             </div>

@@ -181,7 +181,7 @@
 
 /* ProjectCard styles */
 .project-card {
-  background: rgba(27, 27, 29,0.2);
+  background: rgba(27, 27, 29, 0.637);
   backdrop-filter: blur(11.5px);
   /* -webkit-backdrop-filter: blur(11.5px); */
   border-radius: 1.2em;
