@@ -1,15 +1,14 @@
+import { useProjects, deepCloneProject, Project } from "@/ProjectsProvider";
+import EditProjectDialog from "@/Edit Project/EditProjectDialog";
 import React, { useState, useRef, useEffect } from "react";
-import pinSvg from "@/assets/pin.svg";
-import unpinSvg from "@/assets/unpin.svg";
-import ToDoList, { ToDoItem } from "./ToDoList";
-import { DialogProvider } from "../../DialogProvider";
-import EditProjectDialog from "../../Edit Project/EditProjectDialog";
-import { useProjects, deepCloneProject, Project } from "../../ProjectsProvider";
-import "react-contexify/dist/ReactContexify.css";
-import { useFormatLink } from "../../SettingsProvider";
-
-import { useDialog } from "../../useDialog";
+import { DialogProvider } from "@/DialogProvider";
+import { useFormatLink } from "@/SettingsProvider";
 import ProjectQuickLinks from "./ProjectQuickLinks";
+import "react-contexify/dist/ReactContexify.css";
+import ToDoList, { ToDoItem } from "./ToDoList";
+import { useDialog } from "@/useDialog";
+import unpinSvg from "@/assets/unpin.svg";
+import pinSvg from "@/assets/pin.svg";
 
 export interface QuickLink {
     label: string;
