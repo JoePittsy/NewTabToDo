@@ -6,26 +6,13 @@ import React, {
   useCallback,
 } from "react";
 
+import { GeneralSettings, Settings, BackgroundSettings } from "./Interfaces";
+
 /**
  * Global settings interface describing user preferences to persist.
  * Matches the structure expected by SettingsDialog.
  */
-export interface GeneralSettings {
-  theme?: string;
-  useFirefoxContainers: boolean;
-  [key: string]: any;
-}
 
-export interface BackgroundSettings {
-  useSpinningBackground: boolean;
-  [key: string]: any;
-}
-
-export interface Settings {
-  General: GeneralSettings;
-  Background: BackgroundSettings;
-  [key: string]: any;
-}
 import { getSettings, putSettings } from "./idb";
 
 interface SettingsContextType {

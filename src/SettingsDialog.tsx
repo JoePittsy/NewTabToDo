@@ -5,6 +5,7 @@ import { exportAllData, importAllData } from "./idb";
 import { DropboxBackupService } from "./cloud/DropboxBackupService";
 import RestoreDialog from "./cloud/RestoreDialog";
 import { useDialog } from "./DialogProvider";
+import {Settings, GeneralSettings, BackgroundSettings} from "./Interfaces";
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -16,19 +17,6 @@ const tabList = [
   { key: 'background', label: 'Background' }
 ];
 
-interface GeneralSettings {
-  useFirefoxContainers: boolean;
-  showFireworks?: boolean;
-}
-
-interface BackgroundSettings {
-  useSpinningBackground: boolean;
-}
-
-export interface Settings {
-  General: GeneralSettings;
-  Background: BackgroundSettings;
-}
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<string>("general");
