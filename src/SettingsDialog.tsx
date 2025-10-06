@@ -13,6 +13,7 @@ interface SettingsDialogProps {
 const tabList = [
   { key: "general", label: "General" },
   { key: "advanced", label: "Advanced" },
+  { key: 'background', label: 'Background' }
 ];
 
 interface GeneralSettings {
@@ -20,8 +21,13 @@ interface GeneralSettings {
   showFireworks?: boolean;
 }
 
+interface BackgroundSettings {
+  useSpinningBackground: boolean;
+}
+
 export interface Settings {
   General: GeneralSettings;
+  Background: BackgroundSettings;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
@@ -437,6 +443,64 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             ))}
           </div>
         )}
+
+        {activeTab === "background" && (
+          <div>
+            <h3
+              style={{ color: "#b8c7e0", fontWeight: 600, fontSize: "1.1em" }}
+            >
+              Background Settings
+            </h3>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                margin: "1.2em 0 0.7em 0",
+                fontSize: "1.05em",
+                color: "#f3f6fa",
+              }}
+            >
+              <input
+                type="checkbox"
+                //change this to 
+                checked={draft.Background?.useSpinningBackground}
+                onChange={(e) =>
+                  setDraft((s) =>
+                    s
+                      ? {
+                          ...s,
+                          Background: {
+                            ...s.Background,
+                            useSpinningBackground: e.target.checked,
+                          },
+                        }
+                      : s
+                  )
+                }
+                style={{ width: 18, height: 18, accentColor: "#8ec6ff" }}
+                aria-label="Use Spinning Background"
+              />
+              Use Spinning Background
+            </label>
+            <div
+              style={{
+                color: "#b8c7e0",
+                fontSize: "0.98em",
+                marginLeft: 28,
+                marginBottom: 8,
+              }}
+            >
+              When enabled, a colorful spinning background will be displayed.
+            </div>
+            {/* If spinning background is enabled, we should allow background colors settings */}
+            
+          </div>
+
+
+
+        )}
+
       </div>
       <div
         style={{

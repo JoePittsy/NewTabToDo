@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
@@ -21,10 +21,13 @@ import {
     useSortable as useProjectSortable,
     verticalListSortingStrategy as projectVerticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SettingsProvider } from './SettingsProvider';
+import { SettingsProvider,useSettings } from './SettingsProvider';
 import PlusIcon from '@heroicons/react/20/solid/PlusIcon';
 import FireworkEffect from './FireworkEffect';
 import { Bars4Icon } from '@heroicons/react/24/outline';
+import { PsychedelicSpiral } from './components/ui/shadcn-io/psychedelic-spiral';
+
+
 
 function App() {
     const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
@@ -135,6 +138,7 @@ function App() {
     const openProjectObjs = openedProjects
         .map(name => projects.find(p => p.name === name))
         .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
     function handleDragEnd(event: any) {
         const { active, over } = event;
         setDropTargetId(null); // Clear snap preview
@@ -144,19 +148,49 @@ function App() {
         if (oldIndex === -1 || newIndex === -1) return;
         setOpenedProjects(projectArrayMove(openedProjects, oldIndex, newIndex));
     }
+
     function handleDragOver(event: any) {
         const { over } = event;
         setDropTargetId(over?.id ?? null);
     }
 
+    const settings = useSettings();
+
+    // Memoize the spiral only if enabled, so it spins correctly and unmounts/remounts on toggle
+    // Tried without memo, the spiral would stop moving when any state changed in App 
+
+    // NOTE: spiral stops spinning when auto re-render when code saves, need a proper f5
+    // Should not be a issue in production
+    const spiral = useMemo(() => {
+        if (settings && settings.Background?.useSpinningBackground) {
+            return (
+                <PsychedelicSpiral
+                    color1="#871d87"
+                    color2="#b2dfdf"
+                    color3="#0c204e"
+                    pixelFilter={1200}
+                    lighting={0.2}
+                    // isRotate={true}
+                    className="fixed inset-0 -z-10"
+                />
+            );
+        }
+        return null;
+        // Reload this component whenever the background settings changes
+    }, [settings?.Background?.useSpinningBackground]);
+
+
     return (
         <>
+            {spiral}
+
             {fireworks.map(id => (
                 <FireworkEffect key={id} trigger={true} onDone={() => setFireworks(fw => fw.filter(f => f !== id))} multiple={8} />
             ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             {/* Top-right buttons */}
 
+            
             <div className="fixed top-2 right-4 z-[10010] flex gap-2 ">
                 <button
                     type="button"
@@ -199,6 +233,7 @@ function App() {
 
                 </button>
             </div>
+
             <main
                 id="MAIN"
                 role="main"
