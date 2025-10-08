@@ -195,7 +195,7 @@ const ToDoList: React.FC<ToDoListProps> = ({ todos, setTodos, showOnlyCompleted 
                 </div>
                 {showConfirm &&
                     ReactDOM.createPortal(
-                        <div className="fixed inset-0 w-full h-full bg-black/45 z-99999 flex items-center justify-center">
+                        <div className="fixed inset-0 w-full h-full bg-black/45 z-[99999] flex items-center justify-center">
                             <div className="bg-zinc-800 border border-red-400 rounded-md p-8">
                                 <div className="mb-4 text-red-300 font-bold">
                                     Remove this to-do without completing it?
