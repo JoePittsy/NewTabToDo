@@ -1,33 +1,32 @@
-import { useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
-import ProjectCard, { QuickLink } from './ProjectCard';
-import { ToDoItem } from './ToDoList';
-import { DialogProvider, useDialog } from './DialogProvider';
-import EditProjectDialog from './Edit Project/EditProjectDialog';
-import CommandPalette from './CommandPalette';
-import { ProjectsProvider, useProjects, Project, IconLink, isProjectEffectivelyPinned } from './ProjectsProvider';
+import { ProjectsProvider, useProjects, Project, isProjectEffectivelyPinned } from "./ProjectsProvider";
+import EditProjectDialog from "./Edit Project/EditProjectDialog";
+import { DialogProvider } from "./DialogProvider";
+import { SettingsProvider } from "./SettingsProvider";
+import { Bars4Icon } from "@heroicons/react/24/outline";
+import FireworkEffect from "./FireworkEffect";
+import CommandPalette, { Action } from "./CommandPalette";
+import { useState, useEffect } from "react";
+import ProjectCard from "./components/ProjectCard/ProjectCard";
+import "./App.css";
 import {
     DndContext as ProjectDndContext,
     closestCenter as projectClosestCenter,
     PointerSensor as ProjectPointerSensor,
     useSensor as useProjectSensor,
     useSensors as useProjectSensors,
-} from '@dnd-kit/core';
+    DragOverEvent,
+    DragEndEvent,
+} from "@dnd-kit/core";
 import {
     arrayMove as projectArrayMove,
     SortableContext as ProjectSortableContext,
     useSortable as useProjectSortable,
     verticalListSortingStrategy as projectVerticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { SettingsProvider } from './SettingsProvider';
-import PlusIcon from '@heroicons/react/20/solid/PlusIcon';
-import FireworkEffect from './FireworkEffect';
-import { Bars4Icon } from '@heroicons/react/24/outline';
+} from "@dnd-kit/sortable";
+import { useDialog } from "./useDialog";
 
 function App() {
-    const { projects, addProject, openedProjects, openProject, closeProject, setOpenedProjects } = useProjects();
+    const { projects, addProject, openedProjects, openProject, setOpenedProjects } = useProjects();
     const dialog = useDialog();
     const [commandOpen, setCommandOpen] = useState(false);
     // Snap preview state for DnD drop target
@@ -38,26 +37,26 @@ function App() {
     useEffect(() => {
         function onKeyDown(e: KeyboardEvent) {
             // Ctrl+K or Cmd+K
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault();
                 setCommandOpen(true);
             }
         }
-        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener("keydown", onKeyDown);
 
         // Horizontal scroll wheel binding for MAIN container only when not over ProjectCards
-        const main = document.getElementById('MAIN');
+        const main = document.getElementById("MAIN");
         function onWheel(e: WheelEvent) {
             if (!main) return;
             // Ignore if hovering directly over a ProjectCard
-            if ((e.target as HTMLElement).closest('.project-card')) return;
+            if ((e.target as HTMLElement).closest(".project-card")) return;
             // Scroll horizontally using vertical wheel movement
             main.scrollLeft += e.deltaY;
         }
-        if (main) main.addEventListener('wheel', onWheel);
+        if (main) main.addEventListener("wheel", onWheel);
         return () => {
-            window.removeEventListener('keydown', onKeyDown);
-            if (main) main.removeEventListener('wheel', onWheel);
+            window.removeEventListener("keydown", onKeyDown);
+            if (main) main.removeEventListener("wheel", onWheel);
         };
     }, []);
 
@@ -65,7 +64,7 @@ function App() {
         // On mount, open up to 5 effectively pinned projects (manually pinned OR with todos)
         if (openedProjects.length === 0 && projects.length > 0) {
             // Only consider effectively pinned projects
-            const effectivelyPinned = projects.filter(p => isProjectEffectivelyPinned(p));
+            const effectivelyPinned = projects.filter((p) => isProjectEffectivelyPinned(p));
 
             // Sort by: manually pinned first, then by number of uncompleted to-dos (descending),
             // then by most recent to-do createdOn
@@ -75,84 +74,89 @@ function App() {
                 if (!a.pinned && b.pinned) return 1;
 
                 // Then sort by number of uncompleted to-dos (descending)
-                const aUncompleted = a.todos?.filter((t: any) => !t.completed).length ?? 0;
-                const bUncompleted = b.todos?.filter((t: any) => !t.completed).length ?? 0;
+                const aUncompleted = a.todos?.filter((t) => !t.completed).length ?? 0;
+                const bUncompleted = b.todos?.filter((t) => !t.completed).length ?? 0;
                 if (bUncompleted !== aUncompleted) return bUncompleted - aUncompleted;
 
                 // If tie, sort by most recent to-do createdOn
-                const aLatest = Math.max(...(a.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
-                const bLatest = Math.max(...(b.todos?.map((t: any) => t.createdOn || 0) ?? [0]));
+                const aLatest = Math.max(...(a.todos?.map((t) => t.createdOn || 0) ?? [0]));
+                const bLatest = Math.max(...(b.todos?.map((t) => t.createdOn || 0) ?? [0]));
                 return bLatest - aLatest;
             });
 
-            const top5 = sorted.slice(0, 5).map(p => p.name);
+            const top5 = sorted.slice(0, 5).map((p) => p.name);
             if (top5.length > 0) setOpenedProjects(top5);
         }
         // Only run when projects change or openedProjects change
-    }, [projects]);
+    }, [projects, openedProjects.length, setOpenedProjects]);
 
     useEffect(() => {
         // Listen for custom event to trigger fireworks globally
-        function onFireworkEvent(e: any) {
-            setFireworks(fw => [...fw, Date.now() + Math.random()]);
+        function onFireworkEvent() {
+            setFireworks((fw) => [...fw, Date.now() + Math.random()]);
         }
-        window.addEventListener('firework', onFireworkEvent);
-        return () => window.removeEventListener('firework', onFireworkEvent);
+        window.addEventListener("firework", onFireworkEvent);
+        return () => window.removeEventListener("firework", onFireworkEvent);
     }, []);
 
     function handleCreateProject(initialName?: string) {
         const emptyProject: Project = {
-            name: initialName || '',
-            logo: '',
+            name: initialName || "",
+            logo: "",
             todos: [],
             quickLinks: [],
             iconLinks: [],
         };
-        dialog.openDialog( () =>
+        dialog.openDialog(() => (
             <EditProjectDialog
                 project={emptyProject}
-                onSave={proj => {
+                onSave={(proj) => {
                     addProject(proj);
                     openProject(proj.name); // Open the new project automatically
                     dialog.closeDialog();
                 }}
                 onCancel={dialog.closeDialog}
             />
-        );
+        ));
     }
 
-    function handlePaletteChange(item: any) {
-        if (item && (item.query || item.query === '')) {
+    function handlePaletteChange(item: Action) {
+        if (item && (item.query || item.query === "")) {
             setCommandOpen(false);
             setTimeout(() => handleCreateProject(item.query), 0);
         } else if (item && item.url) {
-            window.location = item.url;
+            window.location.href = item.url;
         }
     }
 
     // DnD for open projects
     const sensors = useProjectSensors(useProjectSensor(ProjectPointerSensor));
     const openProjectObjs = openedProjects
-        .map(name => projects.find(p => p.name === name))
+        .map((name) => projects.find((p) => p.name === name))
         .filter((p): p is NonNullable<typeof p> => Boolean(p));
-    function handleDragEnd(event: any) {
+    function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
         setDropTargetId(null); // Clear snap preview
         if (!over || active.id === over.id) return;
-        const oldIndex = openedProjects.indexOf(active.id);
-        const newIndex = openedProjects.indexOf(over.id);
+        const oldIndex = openedProjects.indexOf(active.id as string);
+        const newIndex = openedProjects.indexOf(over.id as string);
         if (oldIndex === -1 || newIndex === -1) return;
         setOpenedProjects(projectArrayMove(openedProjects, oldIndex, newIndex));
     }
-    function handleDragOver(event: any) {
+    function handleDragOver(event: DragOverEvent) {
         const { over } = event;
-        setDropTargetId(over?.id ?? null);
+        setDropTargetId((over?.id as string) ?? null);
     }
 
     return (
         <>
-            {fireworks.map(id => (
-                <FireworkEffect key={id} trigger={true} onDone={() => setFireworks(fw => fw.filter(f => f !== id))} multiple={8} />
+            {fireworks.map((id) => (
+                <FireworkEffect
+                    key={id}
+                    trigger={true}
+                    onDone={() => setFireworks((fw) => fw.filter((f) => f !== id))}
+                    multiple={8}
+                />
             ))}
             <CommandPalette open={commandOpen} setOpen={setCommandOpen} onChange={handlePaletteChange} />
             {/* Top-right buttons */}
@@ -162,11 +166,11 @@ function App() {
                     type="button"
                     className="cursor-pointer rounded-full bg-zinc-800 p-3 text-white shadow-xs hover:bg-zinc-600 transition-colors duration-200"
                     onClick={() => {
-                        const fileInput = document.createElement('input');
-                        fileInput.type = 'file';
-                        fileInput.accept = '.json';
-                        fileInput.onchange = (e: any) => {
-                            const file = e.target.files?.[0];
+                        const fileInput = document.createElement("input");
+                        fileInput.type = "file";
+                        fileInput.accept = ".json";
+                        fileInput.onchange = (e: Event) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
                             if (file) {
                                 const reader = new FileReader();
                                 reader.onload = (event) => {
@@ -174,8 +178,8 @@ function App() {
                                         const projectData = JSON.parse(event.target?.result as string);
                                         addProject(projectData);
                                     } catch (error) {
-                                        console.error('Error parsing project file:', error);
-                                        alert('Invalid project file format');
+                                        console.error("Error parsing project file:", error);
+                                        alert("Invalid project file format");
                                     }
                                 };
                                 reader.readAsText(file);
@@ -185,8 +189,10 @@ function App() {
                     }}
                     title="Import Project"
                 >
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAo0lEQVR4nO3TPQ6CMBiH8R7HAScccdd4Ekm8pN4ETE05ARMPIWFwkY++b9vBPvM//SVNa0wudcANeLOtHrhrwS37GoBaA/Zpwh8pYDmOLH8ceYPXg0OnPhTsgBKofg1CwA4o5u0pFtwBx3l3AD4x4G4rqg2XwnNeqeCn1lXbhW3wx2Vjwcm+0zc+oWciw6tleLW/hFsFt/GBr0K8AS674ZxRbgSeqR+wtpNp2QAAAABJRU5ErkJggg==" alt="import"></img>
-                
+                    <img
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAo0lEQVR4nO3TPQ6CMBiH8R7HAScccdd4Ekm8pN4ETE05ARMPIWFwkY++b9vBPvM//SVNa0wudcANeLOtHrhrwS37GoBaA/Zpwh8pYDmOLH8ceYPXg0OnPhTsgBKofg1CwA4o5u0pFtwBx3l3AD4x4G4rqg2XwnNeqeCn1lXbhW3wx2Vjwcm+0zc+oWciw6tleLW/hFsFt/GBr0K8AS674ZxRbgSeqR+wtpNp2QAAAABJRU5ErkJggg=="
+                        alt="import"
+                    ></img>
                 </button>
                 <button
                     type="button"
@@ -195,80 +201,64 @@ function App() {
                     title="Command Palette"
                 >
                     <Bars4Icon aria-hidden="true" className="size-6" />
-                    
-
                 </button>
             </div>
-            <main
-                id="MAIN"
-                role="main"
-                style={{
-                    // Main Area
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    padding: '2em 0',           
-                    minHeight: '100vh',
-                    boxSizing: 'border-box',
-                    // Avoid centering here; let the track handle it 
-                }}
-            >
+            <main id="MAIN" role="main" className="overflow-x-auto overflow-y-hidden py-8 min-h-screen box-border">
                 <div
                     //flex track
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        gap: '1rem',
-                        alignItems: 'center',
-                        width: 'max-content',     // track is only as wide as its children
-                        margin: '0 auto',         // centers the track WHEN it doesn't overflow
-                        padding: '0 4em',         // left/right breathing room without clipping first/last card
-                        boxSizing: 'border-box',
-                    }}
+                    className="flex flex-row gap-4 items-center w-max mx-auto px-16 box-border"
                 >
-                {openProjectObjs.length === 0 ? (
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '100%',
-                        color: '#aaa',
-                        fontSize: '1.5rem',
-                        fontWeight: 500,
-                        letterSpacing: 0.2,
-                        textAlign: 'center',
-                    }}>
-                        Use <span><kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>Ctrl</kbd> + <kbd style={{ background: '#222', padding: '0.2em 0.5em', borderRadius: '4px', fontWeight: 600 }}>K</kbd> </span>to open the command palette
-                    </div>
-                ) : (
-                    <ProjectDndContext sensors={sensors} collisionDetection={projectClosestCenter} onDragEnd={handleDragEnd} onDragOver={handleDragOver}>
-                        <ProjectSortableContext items={openedProjects} strategy={projectVerticalListSortingStrategy}>
-                            {openProjectObjs.map((project, idx) => (
-                                <SortableProjectCard key={project.name} id={project.name} project={project} isDropTarget={dropTargetId === project.name} />
-                            ))}
-                        </ProjectSortableContext>
-                    </ProjectDndContext>
-                )}
-
+                    {openProjectObjs.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center w-full text-gray-400 text-2xl font-medium tracking-wider text-center">
+                            Use{" "}
+                            <span>
+                                <kbd className="bg-neutral-800 py-[0.2em] px-[0.5em] rounded font-semibold">Ctrl</kbd> +{" "}
+                                <kbd className="bg-neutral-800 py-[0.2em] px-[0.5em] rounded font-semibold">K</kbd>{" "}
+                            </span>
+                            to open the command palette
+                        </div>
+                    ) : (
+                        <ProjectDndContext
+                            sensors={sensors}
+                            collisionDetection={projectClosestCenter}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                        >
+                            <ProjectSortableContext
+                                items={openedProjects}
+                                strategy={projectVerticalListSortingStrategy}
+                            >
+                                {openProjectObjs.map((project) => (
+                                    <SortableProjectCard
+                                        key={project.name}
+                                        id={project.name}
+                                        project={project}
+                                        isDropTarget={dropTargetId === project.name}
+                                    />
+                                ))}
+                            </ProjectSortableContext>
+                        </ProjectDndContext>
+                    )}
                 </div>
             </main>
-
         </>
     );
 }
 
 // Sortable wrapper for ProjectCard
-function SortableProjectCard({ id, project, isDropTarget }: { id: string, project: any, isDropTarget?: boolean }) {
+function SortableProjectCard({ id, project, isDropTarget }: { id: string; project: Project; isDropTarget?: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useProjectSortable({ id });
     // Only use drag handle on a dedicated element, not the whole card
     // Compute transform and transition for pop effect
     let cardTransform = transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined;
     if (isDropTarget) {
-        cardTransform = (cardTransform ? cardTransform + ' ' : '') + 'scale(1.02)';
+        cardTransform = (cardTransform ? cardTransform + " " : "") + "scale(1.02)";
     }
     let cardTransition = transition || undefined;
     if (isDropTarget) {
-        cardTransition = (cardTransition ? cardTransition + ',' : '') + ' box-shadow 0.18s cubic-bezier(.4,2,.6,1), transform 0.18s cubic-bezier(.4,2,.6,1)';
+        cardTransition =
+            (cardTransition ? cardTransition + "," : "") +
+            " box-shadow 0.18s cubic-bezier(.4,2,.6,1), transform 0.18s cubic-bezier(.4,2,.6,1)";
     }
     return (
         <div
