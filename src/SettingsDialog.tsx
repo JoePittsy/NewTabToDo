@@ -1,10 +1,10 @@
+import { DropboxBackupService } from "@/cloud/DropboxBackupService";
+import { useSettings, useUpdateSettings } from "@/SettingsProvider";
+import { exportAllData, importAllData } from "@/idb";
 import React, { useState, useEffect } from "react";
-import DialogHeader from "./DialogHeader";
-import { useSettings, useUpdateSettings } from "./SettingsProvider";
-import { exportAllData, importAllData } from "./idb";
-import { DropboxBackupService } from "./cloud/DropboxBackupService";
-import RestoreDialog from "./cloud/RestoreDialog";
-import { useDialog } from "./useDialog";
+import RestoreDialog from "@/cloud/RestoreDialog";
+import { useDialog } from "@/useDialog";
+import DialogHeader from "@/DialogHeader";
 
 interface SettingsDialogProps {
     onClose: () => void;
@@ -133,7 +133,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         setProviderConnections(connections);
     }, []);
 
-    const handleProviderConnect = async (key: string, ServiceClass: any) => {
+    const handleProviderConnect = async (key: string, ServiceClass: typeof DropboxBackupService) => {
         try {
             const svc = new ServiceClass();
             await svc.authenticate();
@@ -143,7 +143,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         }
     };
 
-    const handleProviderDisconnect = (key: string, ServiceClass: any) => {
+    const handleProviderDisconnect = (key: string, ServiceClass: typeof DropboxBackupService) => {
         const svc = new ServiceClass();
         svc.disconnect();
         setProviderConnections((c) => ({ ...c, [key]: false }));
@@ -152,16 +152,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     if (!draft) return <></>;
 
     return (
-        <div
-            style={{
-                width: 480,
-                minHeight: 340,
-                background: "#23272f",
-                borderRadius: 12,
-                color: "#f3f6fa",
-                position: "relative",
-            }}
-        >
+        <div className="w-120 min-h-84 bg-zinc-900 rounded-xl text-zinc-100 relative">
             <DialogHeader
                 title="Settings"
                 tabs={tabList}
@@ -173,17 +164,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             <div style={{ minHeight: 180, marginBottom: 24 }}>
                 {activeTab === "general" && (
                     <div>
-                        <h3 style={{ color: "#b8c7e0", fontWeight: 600, fontSize: "1.1em" }}>General Settings</h3>
-                        <label
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                                margin: "1.2em 0 0.7em 0",
-                                fontSize: "1.05em",
-                                color: "#f3f6fa",
-                            }}
-                        >
+                        <h3 className="text-indigo-200 font-semibold text-base">General Settings</h3>
+                        <label className="flex items-center gap-2.5 mt-5 mb-3 text-base text-zinc-100">
                             <input
                                 type="checkbox"
                                 checked={draft.General.useFirefoxContainers}
@@ -192,15 +174,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                         s
                                             ? {
                                                   ...s,
-                                                  General: {
-                                                      ...s.General,
-                                                      useFirefoxContainers: e.target.checked,
-                                                  },
+                                                  General: { ...s.General, useFirefoxContainers: e.target.checked },
                                               }
                                             : s
                                     )
                                 }
-                                style={{ width: 18, height: 18, accentColor: "#8ec6ff" }}
+                                className="w-[18px] h-[18px] accent-sky-300"
                                 aria-label="Use Firefox Containers"
                             />
                             Use Firefox Containers
@@ -245,7 +224,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                             : s
                                     )
                                 }
-                                style={{ width: 18, height: 18, accentColor: "#8ec6ff" }}
+                                className="w-[18px] h-[18px] accent-sky-300"
                                 aria-label="Show fireworks when completing to-dos"
                             />
                             Show fireworks when completing to-dos
@@ -255,8 +234,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
                 {activeTab === "advanced" && (
                     <div>
-                        <h3 style={{ color: "#b8c7e0", fontWeight: 600, fontSize: "1.1em" }}>Advanced</h3>
-                        <p style={{ color: "#b8c7e0" }}>
+                        <h3 className="text-indigo-200 font-semibold text-lg">Advanced</h3>
+                        <p className="text-indigo-200">
                             Export or import your entire configuration (projects and settings).
                         </p>
                         <div style={{ display: "flex", gap: 16, margin: "1em 0" }}>
@@ -302,24 +281,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
                 {activeTab === "advanced" && (
                     <div style={{ marginTop: "1.5em" }}>
-                        <h3 style={{ color: "#b8c7e0", fontWeight: 600, fontSize: "1.1em" }}>Cloud Backup (Dropbox)</h3>
-                        <p style={{ color: "#b8c7e0" }}>Manage cloud backups by connecting your account.</p>
+                        <h3 className="text-indigo-200 font-semibold text-lg">Cloud Backup (Dropbox)</h3>
+                        <p className="text-indigo-200">Manage cloud backups by connecting your account.</p>
                         {providers.map((p) => (
                             <div key={p.key} style={{ display: "flex", gap: 16, margin: "1em 0" }}>
                                 {!providerConnections[p.key] && (
                                     <button
                                         type="button"
                                         onClick={() => handleProviderConnect(p.key, p.service)}
-                                        style={{
-                                            background: "#23272f",
-                                            color: "#8ec6ff",
-                                            border: "1px solid #8ec6ff",
-                                            fontWeight: 600,
-                                            fontSize: "1em",
-                                            cursor: "pointer",
-                                            padding: "0.5em 1.2em",
-                                            borderRadius: 6,
-                                        }}
+                                        className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer px-5 py-2 rounded-md"
                                     >
                                         Connect to {p.name}
                                     </button>
@@ -329,48 +299,21 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                         <button
                                             type="button"
                                             onClick={handleCloudBackup}
-                                            style={{
-                                                background: "#23272f",
-                                                color: "#8ec6ff",
-                                                border: "1px solid #8ec6ff",
-                                                fontWeight: 600,
-                                                fontSize: "1em",
-                                                cursor: "pointer",
-                                                padding: "0.5em 1.2em",
-                                                borderRadius: 6,
-                                            }}
+                                            className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                                         >
                                             Backup to {p.name}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleCloudRestore}
-                                            style={{
-                                                background: "#23272f",
-                                                color: "#8ec6ff",
-                                                border: "1px solid #8ec6ff",
-                                                fontWeight: 600,
-                                                fontSize: "1em",
-                                                cursor: "pointer",
-                                                padding: "0.5em 1.2em",
-                                                borderRadius: 6,
-                                            }}
+                                            className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                                         >
                                             Restore from {p.name}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => handleProviderDisconnect(p.key, p.service)}
-                                            style={{
-                                                background: "transparent",
-                                                color: "#f87171",
-                                                border: "none",
-                                                fontWeight: 600,
-                                                fontSize: "1.2em",
-                                                cursor: "pointer",
-                                                padding: "0.2em 0.6em",
-                                                borderRadius: 6,
-                                            }}
+                                            className="bg-transparent text-red-400 border-none font-semibold text-lg cursor-pointer py-1 px-2 rounded-md"
                                             title={`Disconnect ${p.name}`}
                                         >
                                             ✕
@@ -382,27 +325,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </div>
                 )}
             </div>
-            <div
-                style={{
-                    display: "flex",
-                    gap: "1em",
-                    justifyContent: "flex-end",
-                    marginTop: "auto",
-                }}
-            >
+            <div className="flex gap-4 justify-end mt-auto">
                 <button
                     type="button"
                     onClick={onSave}
-                    style={{
-                        background: "none",
-                        color: "#8ec6ff",
-                        border: "none",
-                        fontWeight: 600,
-                        fontSize: "1em",
-                        cursor: "pointer",
-                        padding: "0.5em 1.2em",
-                        borderRadius: 6,
-                    }}
+                    className="bg-transparent text-sky-300 border-none font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                 >
                     Save Settings
                 </button>

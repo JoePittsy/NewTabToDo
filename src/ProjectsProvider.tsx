@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { getAllProjects, putProject, deleteProjectByName } from "./idb";
 import { ToDoItem } from "@/components/ProjectCard/ToDoList";
-import { QuickLink } from "./components/ProjectCard/ProjectCard";
+import { QuickLink } from "@/components/ProjectCard/ProjectCard";
 
 export interface IconLink {
     link: string;
@@ -20,7 +20,7 @@ export interface AccordionState {
 export interface Project {
     name: string;
     logo: string;
-    logoBackgroundColor?: string; // New property for logo background
+    logoBackgroundColor?: string;
     todos: ToDoItem[];
     quickLinks: QuickLink[];
     iconLinks?: IconLink[];
