@@ -20,7 +20,7 @@ const LinkRow: React.FC<LinkRowProps> = ({ link, idx, parentPath, updateLink, de
         setUrl(link.url || "");
     }, [link.url]);
     return (
-        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2, marginTop: 0 }}>
+        <div className="flex items-center gap-1 mb-0.5 mt-0">
             <input
                 type="text"
                 value={label}

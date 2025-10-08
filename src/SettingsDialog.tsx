@@ -161,7 +161,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                 onClose={onClose}
             />
 
-            <div style={{ minHeight: 180, marginBottom: 24 }}>
+            <div className="min-h-[180px] mb-6">
                 {activeTab === "general" && (
                     <div>
                         <h3 className="text-indigo-200 font-semibold text-base">General Settings</h3>
@@ -184,30 +184,14 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                             />
                             Use Firefox Containers
                         </label>
-                        <div
-                            style={{
-                                color: "#b8c7e0",
-                                fontSize: "0.98em",
-                                marginLeft: 28,
-                                marginBottom: 8,
-                            }}
-                        >
+                        <div className="text-indigo-200 text-sm ml-7 mb-2">
                             When enabled, links will open in a container named after the project. Firefox and the{" "}
                             <a href="https://addons.mozilla.org/en-US/firefox/addon/open-url-in-container/">
                                 Open external links in a container
                             </a>{" "}
                             exstention are required.
                         </div>
-                        <label
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                                margin: "0.7em 0 0.7em 0",
-                                fontSize: "1.05em",
-                                color: "#f3f6fa",
-                            }}
-                        >
+                        <label className="flex items-center gap-2.5 my-3 text-base text-zinc-100">
                             <input
                                 type="checkbox"
                                 checked={draft.General.showFireworks !== false}
@@ -238,40 +222,20 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                         <p className="text-indigo-200">
                             Export or import your entire configuration (projects and settings).
                         </p>
-                        <div style={{ display: "flex", gap: 16, margin: "1em 0" }}>
+                        <div className="flex gap-4 my-4">
                             <button
                                 type="button"
                                 onClick={handleExport}
-                                style={{
-                                    background: "#23272f",
-                                    color: "#8ec6ff",
-                                    border: "1px solid #8ec6ff",
-                                    fontWeight: 600,
-                                    fontSize: "1em",
-                                    cursor: "pointer",
-                                    padding: "0.5em 1.2em",
-                                    borderRadius: 6,
-                                }}
+                                className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                             >
                                 Export
                             </button>
-                            <label
-                                style={{
-                                    background: "#23272f",
-                                    color: "#8ec6ff",
-                                    border: "1px solid #8ec6ff",
-                                    fontWeight: 600,
-                                    fontSize: "1em",
-                                    cursor: "pointer",
-                                    padding: "0.5em 1.2em",
-                                    borderRadius: 6,
-                                }}
-                            >
+                            <label className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md">
                                 Import
                                 <input
                                     type="file"
                                     accept="application/json"
-                                    style={{ display: "none" }}
+                                    className="hidden"
                                     onChange={handleImport}
                                 />
                             </label>
@@ -280,11 +244,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                 )}
 
                 {activeTab === "advanced" && (
-                    <div style={{ marginTop: "1.5em" }}>
+                    <div className="mt-6">
                         <h3 className="text-indigo-200 font-semibold text-lg">Cloud Backup (Dropbox)</h3>
                         <p className="text-indigo-200">Manage cloud backups by connecting your account.</p>
                         {providers.map((p) => (
-                            <div key={p.key} style={{ display: "flex", gap: 16, margin: "1em 0" }}>
+                            <div key={p.key} className="flex gap-4 my-4">
                                 {!providerConnections[p.key] && (
                                     <button
                                         type="button"

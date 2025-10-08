@@ -127,20 +127,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
     return (
         <>
             <div className="project-card flex flex-col overflow-hidden w-[520px] h-[80vh] min-h-0 max-h-[80vh] m-8 p-0 text-left text-lg text-zinc-100 bg-zinc-900/70 backdrop-blur-md rounded-xl border border-zinc-700 shadow-lg transition-shadow duration-200 hover:shadow-2xl">
-                <div
-                    className="ProjectCardQuickActions pt-2 pr-5"
-                    style={{ display: "flex", justifyContent: "flex-end", position: "relative", gap: "0em", zIndex: 1 }}
-                >
+                <div className="pt-2 pr-5 flex justify-end relative gap-0 z-[1]">
                     {dragHandleProps && (
                         <button
-                            style={{ marginRight: "6em" }}
                             aria-label="Drag to reorder"
-                            className="bg-transparent border-none text-zinc-400  px-[0.1em] rounded-md mr-0 cursor-grab ml-0"
+                            className="bg-transparent border-none text-zinc-400  px-[0.1em] rounded-md  cursor-grab ml-0 mr-24"
                             {...dragHandleProps}
                             tabIndex={0}
                         >
                             <img
-                                style={{ height: "1em", width: "1em", rotate: "90deg" }}
+                                className="h-4 w-4 rotate-90"
                                 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgklEQVR4nO3UsQmAQAyFYUWxdFR3cAGHcCOt3EIsrH8JpAqCMVgcmK9+BO4SXlWVDGiB+qvcI6AHZuAEDmACumjOTYdZYzTnAjT6AmuL5NxkV8B+M3CJ5F7RXVlDNOcmByK7km8DVhl2d7XeXCoX2VxGNpfK5koFI5vLyOZS2Vw/dwHed3H44QsrtwAAAABJRU5ErkJggg=="
                                 alt="drag-handle"
                             ></img>
@@ -227,9 +223,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                 </div>
 
                 <div className="h-14 pl-8 pt-2 flex items-center gap-0.5">
-                    <div
-                        style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}
-                    >
+                    <div className="relative flex flex-col items-center">
                         <button
                             onClick={openAllLinks}
                             className="flex flex-col items-center justify-center no-underline min-w-11 min-h-11 rounded-lg transition-colors duration-150 p-1 bg-transparent border-none outline-none cursor-pointer relative"
@@ -257,8 +251,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, dragHandleProps }) =
                             <img
                                 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAs0lEQVR4nO3SMQ6DMAyFYS4B6hFQT5JztwNDO5WheypVvcWPQJkQCXYwRa3yRkT8OY6rquQXA1yJpzsKZjd41kQNPL4KAw3QB68XwYADXujyAc4RtJHC3hIN30Xw+k/rb/oETqqaZMCxm862/WIKJ8Y7jV/T/ZQt4wVa4L0LTGK8YeEwh0kskqb5HPi2dFNNjVy4A+5LqLSGzSGLGhQ4IwUW5UjYYxOvhZ0BPp53ykGV/FkG5WgPFpZBmkQAAAAASUVORK5CYII="
                                 alt="external-link"
-                                className="h-8 w-8 flex items-center justify-center rounded-md border border-gray-300 shadow-sm transition-transform duration-150 mb-0.5 bg-white object-contain"
-                                style={{ background: "rgba(255, 255, 255, 0.1)", border: 0 }}
+                                className="h-8 w-8 flex items-center justify-center rounded-md border border-gray-300 shadow-sm transition-transform duration-150 mb-0.5 bg-white/1 object-contain"
                             />
                         </button>
                         <span
@@ -308,15 +301,7 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                             );
                         }
                         return (
-                            <div
-                                key={idx}
-                                style={{
-                                    position: "relative",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                }}
-                            >
+                            <div key={idx} className="relative flex flex-col items-center">
                                 <a
                                     href={formatLink(project.name, link.link)}
                                     target="_blank"
@@ -414,11 +399,8 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                                 display: activeTab === "todos" ? "block" : "none",
                             }}
                         >
-                            <div
-                                className="flex flex-col overflow-hidden pt-4"
-                                style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
-                            >
-                                <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+                            <div className="flex flex-col overflow-hidden pt-4">
+                                <div className="flex-1 min-h-0 overflow-y-auto">
                                     <ToDoList todos={proj.todos} setTodos={setTodos} />
                                 </div>
                             </div>
@@ -432,10 +414,7 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                                 display: activeTab === "completed" ? "block" : "none",
                             }}
                         >
-                            <div
-                                className="flex flex-col overflow-hidden pt-4"
-                                style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
-                            >
+                            <div className="flex flex-col flex-1 min-h-0 overflow-hidden pt-4">
                                 <button
                                     onClick={() => {
                                         const updatedTodos = proj.todos.filter((todo: ToDoItem) => !todo.completed);
@@ -446,7 +425,7 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                                 >
                                     Clear All
                                 </button>
-                                <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+                                <div className="flex-1 min-h-0 overflow-y-auto">
                                     {/* Added a flag, this renders only completed todos with input bar */}
                                     <ToDoList todos={proj.todos} setTodos={setTodos} showOnlyCompleted />
                                 </div>
@@ -461,15 +440,7 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                                 height: "100%",
                             }}
                         >
-                            <div
-                                style={{
-                                    height: "100%",
-                                    flex: 1,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    padding: "0.5em",
-                                }}
-                            >
+                            <div className="h-full flex-1 flex flex-col p-2">
                                 <textarea
                                     value={notesValue}
                                     onChange={(e) => {
@@ -483,8 +454,7 @@ max-w-[220px] text-ellipsis overflow-hidden border border-zinc-700
                                             });
                                         }, 500);
                                     }}
-                                    className="flex-1 p-2 min-h-[100px] border border-zinc-700 rounded-lg bg-zinc-800"
-                                    style={{ height: "100%", resize: "none" }}
+                                    className="flex-1 p-2 min-h-[100px] border border-zinc-700 rounded-lg bg-zinc-800 h-full resize-none"
                                 />
                             </div>
                         </div>

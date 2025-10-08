@@ -206,55 +206,14 @@ function App() {
             <main id="MAIN" role="main" className="overflow-x-auto overflow-y-hidden py-8 min-h-screen box-border">
                 <div
                     //flex track
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: "1rem",
-                        alignItems: "center",
-                        width: "max-content", // track is only as wide as its children
-                        margin: "0 auto", // centers the track WHEN it doesn't overflow
-                        padding: "0 4em", // left/right breathing room without clipping first/last card
-                        boxSizing: "border-box",
-                    }}
+                    className="flex flex-row gap-4 items-center w-max mx-auto px-16 box-border"
                 >
                     {openProjectObjs.length === 0 ? (
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: "100%",
-                                color: "#aaa",
-                                fontSize: "1.5rem",
-                                fontWeight: 500,
-                                letterSpacing: 0.2,
-                                textAlign: "center",
-                            }}
-                        >
+                        <div className="flex flex-col items-center justify-center w-full text-gray-400 text-2xl font-medium tracking-wider text-center">
                             Use{" "}
                             <span>
-                                <kbd
-                                    style={{
-                                        background: "#222",
-                                        padding: "0.2em 0.5em",
-                                        borderRadius: "4px",
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    Ctrl
-                                </kbd>{" "}
-                                +{" "}
-                                <kbd
-                                    style={{
-                                        background: "#222",
-                                        padding: "0.2em 0.5em",
-                                        borderRadius: "4px",
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    K
-                                </kbd>{" "}
+                                <kbd className="bg-neutral-800 py-[0.2em] px-[0.5em] rounded font-semibold">Ctrl</kbd> +{" "}
+                                <kbd className="bg-neutral-800 py-[0.2em] px-[0.5em] rounded font-semibold">K</kbd>{" "}
                             </span>
                             to open the command palette
                         </div>
