@@ -152,7 +152,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     if (!draft) return <></>;
 
     return (
-        <div className="w-120 min-h-84  rounded-xl text-zinc-100 relative">
+        <div className="w-[480px] min-h-[336px]  rounded-xl text-zinc-100 relative">
             <DialogHeader
                 title="Settings"
                 tabs={tabList}
