@@ -37,7 +37,7 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({ title, tabs, activeT
                     <XIcon />
                 </button>
             </div>
-            <div className="flex gap-0 mb-2 border-b border-gray-300">
+            <div className="flex mb-2 border-b border-gray-300">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
