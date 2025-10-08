@@ -33,7 +33,7 @@ const LinkRow: React.FC<LinkRowProps> = ({ link, idx, parentPath, updateLink, de
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                onBlur={(e) => updateLink([...parentPath, idx], { ...link, url: e.target.value })}
+                onBlur={(e) => updateLink([...parentPath, idx], { url: e.target.value })}
                 placeholder="URL (leave blank for folder)"
                 className="w-40 p-[0.2em] rounded border border-zinc-800 bg-zinc-900 text-zinc-100 text-sm flex-grow"
             />
