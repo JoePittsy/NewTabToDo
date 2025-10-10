@@ -1,18 +1,32 @@
-// FireworkEffect.tsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-// Simple firework particle system using canvas
-export default function FireworkEffect({ trigger, onDone, multiple = 1 }: { trigger: boolean, onDone?: () => void, multiple?: number }) {
+interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    alpha: number;
+    color: string;
+    size: number;
+}
+
+export default function FireworkEffect({
+    onDone,
+    multiple = 1,
+}: {
+    trigger: boolean;
+    onDone?: () => void;
+    multiple?: number;
+}) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const animationRef = useRef<number>();
-    const particlesRef = useRef<any[]>([]);
+    const animationRef = useRef<number>(0);
+    const particlesRef = useRef<Particle[]>([]);
     const runningRef = useRef(false);
 
     useEffect(() => {
-        // Only run on mount (for this instance), not on trigger changes
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         if (!ctx) return;
         // Always start animation for this instance
         runningRef.current = false;
@@ -24,14 +38,14 @@ export default function FireworkEffect({ trigger, onDone, multiple = 1 }: { trig
             canvas.height = window.innerHeight;
         }
         resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener("resize", resizeCanvas);
         // Create multiple firework bursts at random positions
         particlesRef.current = [];
         const burstCount = Math.max(1, multiple);
         for (let b = 0; b < burstCount; ++b) {
             // Spread bursts evenly horizontally
             const cx = window.innerWidth * (burstCount === 1 ? 0.5 : (b + 0.5) / burstCount);
-            const cy = window.innerHeight * (Math.random());
+            const cy = window.innerHeight * Math.random();
             const color = `hsl(${Math.floor(Math.random() * 360)},90%,60%)`;
             for (let i = 0; i < 32; ++i) {
                 const angle = (Math.PI * 2 * i) / 32;
@@ -79,24 +93,11 @@ export default function FireworkEffect({ trigger, onDone, multiple = 1 }: { trig
         return () => {
             runningRef.current = false;
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
-            window.removeEventListener('resize', resizeCanvas);
+            window.removeEventListener("resize", resizeCanvas);
         };
-        // eslint-disable-next-line
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [multiple]);
 
     // Fullscreen overlay, pointer-events none
-    return (
-        <canvas
-            ref={canvasRef}
-            style={{
-                position: 'fixed',
-                left: 0,
-                top: 0,
-                width: '100vw',
-                height: '100vh',
-                pointerEvents: 'none',
-                zIndex: 99999,
-            }}
-        />
-    );
+    return <canvas ref={canvasRef} className="fixed left-0 top-0 w-screen h-screen pointer-events-none z-[99999]" />;
 }

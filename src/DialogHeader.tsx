@@ -1,106 +1,58 @@
+import { XIcon } from "lucide-react";
 import React from "react";
 
 export interface TabDef {
-  key: string;
-  label: string;
+    key: string;
+    label: string;
 }
 
 interface DialogHeaderProps {
-  title: string;
-  tabs: TabDef[];
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  style?: React.CSSProperties;
-  className?: string;
-  onClose: (() => void )| null;
+    title: string;
+    tabs: TabDef[];
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    style?: React.CSSProperties;
+    className?: string;
+    onClose: () => void;
 }
 
-export const DialogHeader: React.FC<DialogHeaderProps> = ({
-  title,
-  tabs,
-  activeTab,
-  setActiveTab,
-  onClose,
-  style,
-  className,
-}) => {
-  React.useEffect(() => {
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === "Escape" && onClose) {
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "1.3em", color: "#8ec6ff" }}>
-          {title}
-        </h2>
-        {onClose ? 
-        <button
-          onClick={onClose}
-          style={{
-            marginTop: 8,
-            padding: "0.5em 1.2em",
-            borderRadius: 6,
-            color: "#8ec6ff",
-            backgroundColor: "transparent",
-            border: "none",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontSize: "1.08em",
-          }}
-        >
-          X
-        </button>
-        : null}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          gap: 0,
-          marginBottom: "0.5em",
-          borderBottom: "1.5px solid #222",
-        }}
-      >
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setActiveTab(t.key as any)}
-            style={{
-              background: "none",
-              border: "none",
-              color: activeTab === t.key ? "#8ec6ff" : "#7a869a",
-              fontWeight: activeTab === t.key ? 700 : 500,
-              fontSize: "1em",
-              padding: "0.5em 1.2em",
-              borderBottom:
-                activeTab === t.key
-                  ? "2.5px solid #8ec6ff"
-                  : "2.5px solid transparent",
-              cursor: "pointer",
-              outline: "none",
-              borderRadius: "8px 8px 0 0",
-              marginRight: 2,
-              transition: "color 0.2s, border-bottom 0.2s",
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+export const DialogHeader: React.FC<DialogHeaderProps> = ({ title, tabs, activeTab, setActiveTab, onClose }) => {
+    React.useEffect(() => {
+        function handleEsc(e: KeyboardEvent) {
+            if (e.key === "Escape") {
+                onClose();
+            }
+        }
+        window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
+    }, [onClose]);
+    return (
+        <div>
+            <div className="flex items-center justify-between">
+                <h2 className="m-0 text-2xl text-blue-300">{title}</h2>
+                <button
+                    onClick={onClose}
+                    className="mt-2 p-2 rounded-md text-blue-300 bg-transparent border-none font-semibold cursor-pointer text-lg"
+                >
+                    <XIcon />
+                </button>
+            </div>
+            <div className="flex mb-2 border-b border-gray-300">
+                {tabs.map((t) => (
+                    <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => setActiveTab(t.key)}
+                        className={`${
+                            activeTab === t.key ? "text-blue-300 font-bold" : "text-gray-500"
+                        } bg-transparent border-none cursor-pointer outline-none rounded-t-md py-2 px-4`}
+                    >
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
 };
 
 export default DialogHeader;
