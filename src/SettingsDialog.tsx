@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import RestoreDialog from "@/cloud/RestoreDialog";
 import { useDialog } from "@/useDialog";
 import DialogHeader from "@/DialogHeader";
+import { Settings} from "@/Interfaces";
 
 interface SettingsDialogProps {
     onClose: () => void;
@@ -16,19 +17,6 @@ const tabList = [
     { key: "background", label: "Background" }
 ];
 
-interface GeneralSettings {
-    useFirefoxContainers: boolean;
-    showFireworks?: boolean;
-}
-
-interface BackgroundSettings {
-    useSpinningBackground: boolean;
-}
-
-export interface Settings {
-    General: GeneralSettings;
-    Background: BackgroundSettings;
-}
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<string>("general");
@@ -359,7 +347,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </div>
                 )}
             </div>
-            
+
             <div className="flex gap-4 justify-end mt-auto">
                 <button
                     type="button"
