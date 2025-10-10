@@ -12,7 +12,7 @@ interface DialogHeaderProps {
   setActiveTab: (tab: string) => void;
   style?: React.CSSProperties;
   className?: string;
-  onClose: () => void | null;
+  onClose: (() => void )| null;
 }
 
 export const DialogHeader: React.FC<DialogHeaderProps> = ({
@@ -26,7 +26,7 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({
 }) => {
   React.useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && onClose) {
         onClose();
       }
     }

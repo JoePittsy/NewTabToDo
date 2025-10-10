@@ -442,7 +442,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             >
               <input
                 type="checkbox"
-                //change this to 
                 checked={draft.Background?.useSpinningBackground}
                 onChange={(e) =>
                   setDraft((s) =>

@@ -139,7 +139,6 @@ export default function CommandPalette({
     } else if (action === "showHelp") {
       //setOpen(false);
       setQuery("");
-      //setQuery("");
       setView('help');
     } else if (action === "createProject") {
       if (onChange) {
