@@ -12,7 +12,7 @@ interface DialogHeaderProps {
   setActiveTab: (tab: string) => void;
   style?: React.CSSProperties;
   className?: string;
-  onClose: () => void;
+  onClose: () => void | null;
 }
 
 export const DialogHeader: React.FC<DialogHeaderProps> = ({
@@ -45,6 +45,7 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({
         <h2 style={{ margin: 0, fontSize: "1.3em", color: "#8ec6ff" }}>
           {title}
         </h2>
+        {onClose ? 
         <button
           onClick={onClose}
           style={{
@@ -61,6 +62,7 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({
         >
           X
         </button>
+        : null}
       </div>
       <div
         style={{

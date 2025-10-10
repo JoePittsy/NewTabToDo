@@ -183,22 +183,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   if (!draft) return <></>;
 
   return (
-    <div
-      style={{
-        width: 480,
-        minHeight: 340,
-        background: "#23272f",
-        borderRadius: 12,
-        color: "#f3f6fa",
-        position: "relative",
-      }}
-    >
+    <div>
       <DialogHeader
         title="Settings"
         tabs={tabList}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onClose={onClose}
+        onClose={null}
       />
 
       <div style={{ minHeight: 180, marginBottom: 24 }}>

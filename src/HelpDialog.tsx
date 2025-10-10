@@ -15,9 +15,9 @@ const HelpDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [tab, setTab] = useState('general');
 
     return (
-        <div style={{ minHeight: 340, background: '#23272f', borderRadius: 12, color: '#f3f6fa', position: 'relative' }}>
-           <DialogHeader title='Help' tabs={TABS} activeTab={tab} setActiveTab={setTab} onClose={onClose}  />
-            <div style={{ color: '#ccc', fontSize: '1.13em', marginBottom: 18, minHeight: 120, lineHeight: 1.7 }}>
+        <div >
+           <DialogHeader title='Help' tabs={TABS} activeTab={tab} setActiveTab={setTab} onClose={null}  />
+            <div style={{  fontSize: '1.13em', marginBottom: 18, minHeight: 120, lineHeight: 1.7 }}>
                 {tab === 'general' && (
                     <>
                         <p style={{ marginBottom: 8 }}><b>Project Manager App</b></p>

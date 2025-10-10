@@ -430,7 +430,7 @@ export default function CommandPalette({
                           <ComboboxOption
                             key={project.name}
                             value={project}
-                            className={`group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden `}
+                            className={`group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-zinc-600 data-focus:text-white data-focus:outline-hidden `}
                             aria-selected={selectedProjects.includes(
                               project.name
                             )}
@@ -529,7 +529,7 @@ export default function CommandPalette({
                         <ComboboxOption
                           key={project.name}
                           value={project}
-                          className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
+                          className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-zinc-600 data-focus:text-white data-focus:outline-hidden"
                         >
                           {project.logo ? (
                             <img
@@ -569,7 +569,7 @@ export default function CommandPalette({
                     <ComboboxOption
                       key={action.name}
                       value={action}
-                      className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
+                      className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-zinc-600 data-focus:text-white data-focus:outline-hidden"
                     >
                       <action.icon
                         className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
