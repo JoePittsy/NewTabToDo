@@ -94,30 +94,28 @@ export default function CommandPalette({
     dialog.openDialog(() => <HelpDialog onClose={dialog.closeDialog} />);
   }
 
+  const [view, setView] = useState<'commands' | 'settings' | 'help'>('commands');
+
   function handleQuickAction(action: string) {
+    if (view !== 'commands') return;
     if (action === "openAll") {
       setOpen(false);
       setQuery("");
-      // Open all unopened projects
       const unopenedNames = projects
         .filter((p) => !openedProjects.includes(p.name))
         .map((p) => p.name);
       if (unopenedNames.length > 0) {
-        // Use setOpenedProjects to open all
         setTimeout(() => {
-          // Add unopened to openedProjects, preserving order
           const all = [
             ...openedProjects,
             ...unopenedNames.filter((n) => !openedProjects.includes(n)),
           ];
-          // Remove duplicates
           setOpenedProjects(Array.from(new Set(all)));
         }, 0);
       }
     } else if (action === "openActiveTodos") {
       setOpen(false);
       setQuery("");
-      // Open all projects with at least one uncompleted to-do
       const activeTodoProjects = projects
         .filter(
           (p) =>
@@ -139,17 +137,17 @@ export default function CommandPalette({
       setQuery("");
       setTimeout(() => setOpenedProjects([]), 0);
     } else if (action === "showHelp") {
-      setOpen(false);
+      //setOpen(false);
       setQuery("");
-      handleShowHelp();
+      //setQuery("");
+      setView('help');
     } else if (action === "createProject") {
       if (onChange) {
         onChange({ query });
       }
     } else if (action === "settings") {
-      setOpen(false);
       setQuery("");
-      dialog.openDialog(() => <SettingsDialog onClose={dialog.closeDialog} />);
+      setView('settings');
     }
   }
 
@@ -234,6 +232,10 @@ export default function CommandPalette({
       className="relative z-10"
       open={open}
       onClose={() => {
+        if (view === 'settings') {
+          setView('commands');
+          return;
+        }
         setOpen(false);
         setQuery("");
       }}
@@ -248,7 +250,48 @@ export default function CommandPalette({
           transition
           className="mx-auto max-w-2xl transform divide-y divide-gray-500/20 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl transition-all data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
         >
-          <Combobox
+          {view === 'settings' ? (
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-2">
+                <button
+                  className="text-gray-400 hover:text-white text-sm"
+                  onClick={() => setView('commands')}
+                >
+                  ← Back
+                </button>
+                <button
+                  className="text-gray-400 hover:text-white text-sm"
+                  onClick={() => setOpen(false)}
+                >
+                  ✕ Close
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[70vh]">
+                <SettingsDialog onClose={() => setView('commands')} />
+              </div>
+            </div>
+          ) : view === 'help' ? (
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-2">
+                <button
+                  className="text-gray-400 hover:text-white text-sm"
+                  onClick={() => setView('commands')}
+                >
+                  ← Back
+                </button>
+                <button
+                  className="text-gray-400 hover:text-white text-sm"
+                  onClick={() => setOpen(false)}
+                >
+                  ✕ Close
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[70vh]">
+                <HelpDialog onClose={() => setView('commands')} />
+              </div>
+            </div>
+          ) : (
+            <Combobox
             onChange={(item: any) => {
               if (
                 item &&
@@ -268,7 +311,6 @@ export default function CommandPalette({
                 window.location = item.url;
                 return;
               }
-              // Fix: if item has a 'query' property, treat as create project
               if (item && typeof item.query === "string" && onChange) {
                 onChange({ query: item.query });
                 return;
@@ -544,6 +586,7 @@ export default function CommandPalette({
               </li>
             </ComboboxOptions>
           </Combobox>
+          )}
         </DialogPanel>
       </div>
     </Dialog>
