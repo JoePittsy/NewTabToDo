@@ -94,7 +94,10 @@ export default function CommandPalette({
         dialog.openDialog(() => <HelpDialog onClose={dialog.closeDialog} />);
     }
 
+    const [view, setView] = useState<"commands" | "settings" | "help">("commands");
+
     function handleQuickAction(action: string) {
+        if (view !== "commands") return;
         if (action === "openAll") {
             setOpen(false);
             setQuery("");
@@ -127,17 +130,19 @@ export default function CommandPalette({
             setQuery("");
             setTimeout(() => setOpenedProjects([]), 0);
         } else if (action === "showHelp") {
-            setOpen(false);
+            //setOpen(false);
             setQuery("");
-            handleShowHelp();
+            //handleShowHelp();
+            setView("help");
         } else if (action === "createProject") {
             if (onChange) {
                 onChange({ query } as Action);
             }
         } else if (action === "settings") {
-            setOpen(false);
+            //setOpen(false);
             setQuery("");
-            dialog.openDialog(() => <SettingsDialog onClose={dialog.closeDialog} />);
+            //dialog.openDialog(() => <SettingsDialog onClose={dialog.closeDialog} />);
+            setView("settings");
         }
     }
 
@@ -215,6 +220,11 @@ export default function CommandPalette({
             className="relative z-10"
             open={open}
             onClose={() => {
+
+             if (view === "settings") {
+                setView("commands");
+                return;
+             }
                 setOpen(false);
                 setQuery("");
             }}
@@ -227,9 +237,47 @@ export default function CommandPalette({
             <div className="fixed inset-0 z-10 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
                 <DialogPanel
                     transition
-                    className="mx-auto max-w-2xl transform divide-y divide-gray-500/20 overflow-hidden rounded-xl bg-gray-900 shadow-2xl transition-all data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+                    className="mx-auto max-w-2xl transform divide-y divide-gray-500/20 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl transition-all data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
                 >
-                    <Combobox
+                    {/* Embeds settings and help dialogs inside the command popup */}
+                    {view === 'settings' || view === 'help' ? (
+                        <div className="p-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <button
+                                    className="text-gray-400 hover:text-white text-sm"
+                                    onClick={() => setView('commands')}
+                                >
+                                    ← Back
+                                </button>
+                                {/* We might want to use this button instead of popup X */}
+                                {/* <button
+                                    className="text-gray-400 hover:text-white text-sm"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    ✕ Close
+                                </button> */}
+                            </div>
+                            <div className="overflow-y-auto max-h-[70vh]">
+                                {view === 'settings' && (
+                                    <SettingsDialog onClose={
+
+                                        () => {
+                                            setOpen(false)
+                                            setView('commands')
+                                        }} />
+                                )}
+                                {view === 'help' && (
+                                    <HelpDialog onClose={
+
+                                        () => {
+                                            setOpen(false)
+                                            setView('commands')
+                                        }} />
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+            <Combobox
                         onChange={(item) => {
                             const typedItem = item as Action;
                             if (typedItem && typedItem.name && projects.some((p) => p.name === typedItem.name)) {
@@ -486,6 +534,7 @@ export default function CommandPalette({
                             </li>
                         </ComboboxOptions>
                     </Combobox>
+                    )}
                 </DialogPanel>
             </div>
         </Dialog>
