@@ -127,7 +127,6 @@ export default function CommandPalette({
             setQuery("");
             setTimeout(() => setOpenedProjects([]), 0);
         } else if (action === "showHelp") {
-            //setOpen(false);
             setQuery("");
             setView("help");
         } else if (action === "createProject") {
