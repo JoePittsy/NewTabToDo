@@ -134,7 +134,6 @@ export default function CommandPalette({
                 onChange({ query } as Action);
             }
         } else if (action === "settings") {
-            //setOpen(false);
             setQuery("");
             setView("settings");
         }
