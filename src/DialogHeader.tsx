@@ -29,10 +29,10 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({ title, tabs, activeT
     return (
         <div>
             <div className="flex items-center justify-between">
-                <h2 className="m-0 text-2xl text-blue-300">{title}</h2>
+                <h2 className="m-0 text-2xl text-gray-400">{title}</h2>
                 <button
                     onClick={onClose}
-                    className="mt-2 p-2 rounded-md text-blue-300 bg-transparent border-none font-semibold cursor-pointer text-lg"
+                    className="mt-2 p-2 rounded-md text-gray-400 bg-transparent border-none font-semibold cursor-pointer text-lg"
                 >
                     <XIcon />
                 </button>
@@ -44,7 +44,7 @@ export const DialogHeader: React.FC<DialogHeaderProps> = ({ title, tabs, activeT
                         type="button"
                         onClick={() => setActiveTab(t.key)}
                         className={`${
-                            activeTab === t.key ? "text-blue-300 font-bold" : "text-gray-500"
+                            activeTab === t.key ? "text-white font-bold" : "text-gray-500"
                         } bg-transparent border-none cursor-pointer outline-none rounded-t-md py-2 px-4`}
                     >
                         {t.label}

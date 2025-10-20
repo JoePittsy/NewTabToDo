@@ -1,0 +1,122 @@
+import * as React from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+
+type StateKey = "one" | "two" | "three";
+
+export default function ResizablePanel() {
+  const [state, setState] = React.useState<StateKey>("one");
+
+  return (
+    <div style={{ maxWidth: 520, margin: "40px auto", fontFamily: "system-ui" }}>
+      {/* Tabs with a shared underline using layoutId */}
+      <LayoutGroup id="panel">
+        <ul style={{ display: "flex", gap: 12, listStyle: "none", padding: 0, margin: 0 }}>
+          {(["one", "two", "three"] as StateKey[]).map((key) => {
+            const isActive = state === key;
+            return (
+              <li key={key} style={{ position: "relative", paddingBottom: 6 }}>
+                <button
+                  onClick={() => setState(key)}
+                  style={{
+                    cursor: "pointer",
+                    background: "transparent",
+                    border: 0,
+                    fontSize: 14,
+                    padding: 6,
+                    opacity: isActive ? 1 : 0.6,
+                  }}
+                >
+                  {key.toUpperCase()}
+                </button>
+
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-underline"
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 2,
+                      borderRadius: 2,
+                      background: "currentColor",
+                    }}
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* The container whose height/size changes between states */}
+        <motion.div
+          layout
+          transition={{ layout: { duration: 0.3 } }}
+          style={{
+            marginTop: 16,
+            border: "1px solid #ddd",
+            borderRadius: 12,
+            padding: 16,
+            overflow: "hidden", // helps hide exiting child while height animates
+            boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
+          }}
+        >
+          {/* Crossfade/slide content for each state */}
+          <AnimatePresence mode="wait">
+            {state === "one" && (
+              <motion.div
+                key="one"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <h3>State One</h3>
+                <p>Short content. The panel is small.</p>
+              </motion.div>
+            )}
+
+            {state === "two" && (
+              <motion.div
+                key="two"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <h3>State Two</h3>
+                <p>
+                  Medium content with a couple of items:
+                </p>
+                <ul>
+                  <li>Item A</li>
+                  <li>Item B</li>
+                </ul>
+              </motion.div>
+            )}
+
+            {state === "three" && (
+              <motion.div
+                key="three"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <h3>State Three</h3>
+                <p>
+                  Longer content that makes the container much taller. Add more text or children here
+                  to see the smooth height transition.
+                </p>
+                <p>
+                  Because the parent has <code>layout</code>, Motion animates the height and any
+                  sibling reflow automatically.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </LayoutGroup>
+    </div>
+  );
+}

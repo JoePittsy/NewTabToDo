@@ -4,16 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
  * Global settings interface describing user preferences to persist.
  * Matches the structure expected by SettingsDialog.
  */
-export interface GeneralSettings {
-    theme?: string;
-    useFirefoxContainers: boolean;
-    [key: string]: any;
-}
-
-export interface Settings {
-    General: GeneralSettings;
-    [key: string]: any;
-}
+import { Settings } from "./Interfaces";
 import { getSettings, putSettings } from "./idb";
 
 interface SettingsContextType {

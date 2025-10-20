@@ -23,7 +23,9 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useProjects } from "./ProjectsProvider";
 import HelpDialog from "./HelpDialog";
 import SettingsDialog from "./SettingsDialog";
-import { useDialog } from "./useDialog";
+import { motion, AnimatePresence, LayoutGroup } from "motion/react";
+
+const MotionDialogPanel = motion(DialogPanel);
 
 export interface Action {
     name: string;
@@ -49,7 +51,6 @@ export default function CommandPalette({
 }) {
     const [query, setQuery] = useState("");
     const { projects, openedProjects, openProject, setOpenedProjects } = useProjects();
-    const dialog = useDialog();
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     const [lastActiveIndex, setLastActiveIndex] = useState<number | null>(null);
     const listRef = useRef<HTMLUListElement>(null);
@@ -90,11 +91,10 @@ export default function CommandPalette({
         { name: "Settings", icon: TagIcon, action: "settings" },
     ];
 
-    function handleShowHelp() {
-        dialog.openDialog(() => <HelpDialog onClose={dialog.closeDialog} />);
-    }
+    const [view, setView] = useState<"commands" | "settings" | "help">("commands");
 
     function handleQuickAction(action: string) {
+        if (view !== "commands") return;
         if (action === "openAll") {
             setOpen(false);
             setQuery("");
@@ -127,17 +127,15 @@ export default function CommandPalette({
             setQuery("");
             setTimeout(() => setOpenedProjects([]), 0);
         } else if (action === "showHelp") {
-            setOpen(false);
             setQuery("");
-            handleShowHelp();
+            setView("help");
         } else if (action === "createProject") {
             if (onChange) {
                 onChange({ query } as Action);
             }
         } else if (action === "settings") {
-            setOpen(false);
             setQuery("");
-            dialog.openDialog(() => <SettingsDialog onClose={dialog.closeDialog} />);
+            setView("settings");
         }
     }
 
@@ -215,6 +213,11 @@ export default function CommandPalette({
             className="relative z-10"
             open={open}
             onClose={() => {
+
+             if (view === "settings") {
+                setView("commands");
+                return;
+             }
                 setOpen(false);
                 setQuery("");
             }}
@@ -225,268 +228,357 @@ export default function CommandPalette({
             />
 
             <div className="fixed inset-0 z-10 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
-                <DialogPanel
-                    transition
-                    className="mx-auto max-w-2xl transform divide-y divide-gray-500/20 overflow-hidden rounded-xl bg-gray-900 shadow-2xl transition-all data-closed:scale-95 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
-                >
-                    <Combobox
-                        onChange={(item) => {
-                            const typedItem = item as Action;
-                            if (typedItem && typedItem.name && projects.some((p) => p.name === typedItem.name)) {
-                                openProject(typedItem.name);
-                                setOpen(false);
-                                setQuery("");
-                                return;
-                            }
-                            if (typedItem && typedItem.action) {
-                                handleQuickAction(typedItem.action);
-                                return;
-                            }
-                            if (typedItem && typedItem.url) {
-                                window.location.href = typedItem.url;
-                                return;
-                            }
-                            if (typedItem && typeof typedItem.query === "string" && onChange) {
-                                onChange({ query: typedItem.query } as Action);
-                                return;
-                            }
-                            if (onChange) {
-                                onChange(typedItem);
-                            }
+                <LayoutGroup id="command-palette-content">
+                    <MotionDialogPanel
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            layout: { duration: 0.3, ease: "easeInOut" },
+                            opacity: { duration: 0.2, ease: "easeOut" },
+                            scale: { duration: 0.2, ease: "easeOut" },
                         }}
+                        className="mx-auto max-w-2xl transform divide-y divide-gray-500/20 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl"
                     >
-                        <div className="grid grid-cols-1">
-                            <ComboboxInput
-                                autoFocus
-                                className="col-start-1 row-start-1 h-12 w-full bg-transparent pr-4 pl-11 text-base text-white outline-hidden placeholder:text-gray-500 sm:text-sm"
-                                placeholder="Search..."
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
-                                onBlur={() => setQuery("")}
-                                onKeyDown={(e) => {
-                                    const list = query === "" ? unopened : filteredProjects;
-                                    // Multi-select with Ctrl/Cmd+ArrowUp/Down
-                                    if ((e.ctrlKey || e.metaKey) && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
-                                        if (!list.length) return;
-                                        let idx = lastActiveIndex;
-                                        // Use [data-focus] to find the focused item
-                                        if (listRef.current) {
-                                            const focused = listRef.current.querySelector("[data-focus]");
-                                            if (focused) {
-                                                const options = Array.from(
-                                                    listRef.current.querySelectorAll('[role="option"]')
-                                                );
-                                                const foundIdx = options.findIndex((opt) => opt === focused);
-                                                if (foundIdx >= 0) idx = foundIdx;
-                                            }
-                                        }
-                                        if (idx === null) idx = 0;
-                                        let nextIdx = idx;
-                                        if (e.key === "ArrowDown") nextIdx = Math.min(nextIdx + 1, list.length - 1);
-                                        if (e.key === "ArrowUp") nextIdx = Math.max(nextIdx - 1, 0);
-                                        setLastActiveIndex(nextIdx);
-                                        const namesToSelect = [list[idx].name, list[nextIdx].name];
-                                        setSelectedProjects((prev) => {
-                                            const newSel = [...prev];
-                                            for (const n of namesToSelect) {
-                                                if (!newSel.includes(n)) newSel.push(n);
-                                            }
-                                            return newSel;
-                                        });
-                                    }
-                                    // Space toggles selection for focused item
-                                    if (e.key === " " || e.key === "Spacebar") {
-                                        let idx = lastActiveIndex;
-                                        if (listRef.current) {
-                                            const focused = listRef.current.querySelector("[data-focus]");
-                                            if (focused) {
-                                                const options = Array.from(
-                                                    listRef.current.querySelectorAll('[role="option"]')
-                                                );
-                                                const foundIdx = options.findIndex((opt) => opt === focused);
-                                                if (foundIdx >= 0) idx = foundIdx;
-                                            }
-                                        }
-                                        if (idx !== null && list[idx]) {
-                                            e.preventDefault();
-                                            setLastActiveIndex(idx);
-                                            const name = list[idx].name;
-                                            setSelectedProjects((prev) =>
-                                                prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
-                                            );
-                                        }
-                                    }
-                                    // Enter opens all selected
-                                    if (e.key === "Enter" && selectedProjects.length > 0) {
-                                        e.preventDefault();
-                                        setOpen(false);
-                                        setQuery("");
-                                        setTimeout(() => {
-                                            setOpenedProjects(
-                                                Array.from(new Set([...openedProjects, ...selectedProjects]))
-                                            );
-                                        }, 0);
-                                    }
-                                }}
-                            />
-                            <MagnifyingGlassIcon
-                                className="pointer-events-none col-start-1 row-start-1 ml-4 size-5 self-center text-gray-500"
-                                aria-hidden="true"
-                            />
-                        </div>
-                        {(unopened.length > 0 || filteredProjects.length > 0) && (
-                            <ComboboxOptions
-                                static
-                                as="ul"
-                                ref={listRef}
-                                className="max-h-80 scroll-py-2 divide-y divide-gray-500/20 overflow-y-auto"
-                            >
-                                <li className="p-2">
-                                    {query === "" && (
-                                        <>
-                                            <h2 className="mt-4 mb-2 px-3 text-xs font-semibold text-gray-200">
-                                                Unopened Projects
-                                            </h2>
-                                            <ul className="text-sm text-gray-400">
-                                                {unopened.map((project, idx) => (
-                                                    <ComboboxOption
-                                                        key={project.name}
-                                                        value={project}
-                                                        className={`group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden `}
-                                                        aria-selected={selectedProjects.includes(project.name)}
-                                                        onClick={() => {
-                                                            // Single click: open project
-                                                            openProject(project.name);
-                                                            setOpen(false);
-                                                            setQuery("");
-                                                        }}
-                                                        onKeyDown={(e) => {
-                                                            // Space toggles selection
-                                                            if (e.key === " " || e.key === "Spacebar") {
+                        <motion.div
+                            layout
+                            transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
+                            className="overflow-hidden"
+                        >
+                            <AnimatePresence mode="wait">
+                                {view === "commands" ? (
+                                    <motion.div
+                                        key="commands"
+                                        layout
+                                        initial={{ opacity: 0, y: 12 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -12 }}
+                                        transition={{ duration: 0.18, ease: "easeOut" }}
+                                        className="divide-y divide-gray-500/20"
+                                    >
+                                        <Combobox
+                                            onChange={(item) => {
+                                                const typedItem = item as Action;
+                                                if (
+                                                    typedItem &&
+                                                    typedItem.name &&
+                                                    projects.some((p) => p.name === typedItem.name)
+                                                ) {
+                                                    openProject(typedItem.name);
+                                                    setOpen(false);
+                                                    setQuery("");
+                                                    return;
+                                                }
+                                                if (typedItem && typedItem.action) {
+                                                    handleQuickAction(typedItem.action);
+                                                    return;
+                                                }
+                                                if (typedItem && typedItem.url) {
+                                                    window.location.href = typedItem.url;
+                                                    return;
+                                                }
+                                                if (typedItem && typeof typedItem.query === "string" && onChange) {
+                                                    onChange({ query: typedItem.query } as Action);
+                                                    return;
+                                                }
+                                                if (onChange) {
+                                                    onChange(typedItem);
+                                                }
+                                            }}
+                                        >
+                                            <div className="grid grid-cols-1">
+                                                <ComboboxInput
+                                                    autoFocus
+                                                    className="col-start-1 row-start-1 h-12 w-full bg-transparent pr-4 pl-11 text-base text-white outline-hidden placeholder:text-gray-500 sm:text-sm"
+                                                    placeholder="Search..."
+                                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                                        setQuery(event.target.value)
+                                                    }
+                                                    onBlur={() => setQuery("")}
+                                                    onKeyDown={(e) => {
+                                                        const list = query === "" ? unopened : filteredProjects;
+                                                        // Multi-select with Ctrl/Cmd+ArrowUp/Down
+                                                        if (
+                                                            (e.ctrlKey || e.metaKey) &&
+                                                            (e.key === "ArrowDown" || e.key === "ArrowUp")
+                                                        ) {
+                                                            if (!list.length) return;
+                                                            let idx = lastActiveIndex;
+                                                            // Use [data-focus] to find the focused item
+                                                            if (listRef.current) {
+                                                                const focused = listRef.current.querySelector(
+                                                                    "[data-focus]"
+                                                                );
+                                                                if (focused) {
+                                                                    const options = Array.from(
+                                                                        listRef.current.querySelectorAll('[role="option"]')
+                                                                    );
+                                                                    const foundIdx = options.findIndex(
+                                                                        (opt) => opt === focused
+                                                                    );
+                                                                    if (foundIdx >= 0) idx = foundIdx;
+                                                                }
+                                                            }
+                                                            if (idx === null) idx = 0;
+                                                            let nextIdx = idx;
+                                                            if (e.key === "ArrowDown") {
+                                                                nextIdx = Math.min(nextIdx + 1, list.length - 1);
+                                                            }
+                                                            if (e.key === "ArrowUp") {
+                                                                nextIdx = Math.max(nextIdx - 1, 0);
+                                                            }
+                                                            setLastActiveIndex(nextIdx);
+                                                            const namesToSelect = [list[idx].name, list[nextIdx].name];
+                                                            setSelectedProjects((prev) => {
+                                                                const newSel = [...prev];
+                                                                for (const n of namesToSelect) {
+                                                                    if (!newSel.includes(n)) newSel.push(n);
+                                                                }
+                                                                return newSel;
+                                                            });
+                                                        }
+                                                        // Space toggles selection for focused item
+                                                        if (e.key === " " || e.key === "Spacebar") {
+                                                            let idx = lastActiveIndex;
+                                                            if (listRef.current) {
+                                                                const focused = listRef.current.querySelector("[data-focus]");
+                                                                if (focused) {
+                                                                    const options = Array.from(
+                                                                        listRef.current.querySelectorAll('[role="option"]')
+                                                                    );
+                                                                    const foundIdx = options.findIndex(
+                                                                        (opt) => opt === focused
+                                                                    );
+                                                                    if (foundIdx >= 0) idx = foundIdx;
+                                                                }
+                                                            }
+                                                            if (idx !== null && list[idx]) {
                                                                 e.preventDefault();
                                                                 setLastActiveIndex(idx);
+                                                                const name = list[idx].name;
                                                                 setSelectedProjects((prev) =>
-                                                                    prev.includes(project.name)
-                                                                        ? prev.filter((n) => n !== project.name)
-                                                                        : [...prev, project.name]
+                                                                    prev.includes(name)
+                                                                        ? prev.filter((n) => n !== name)
+                                                                        : [...prev, name]
                                                                 );
                                                             }
-                                                        }}
-                                                    >
-                                                        {/* Checkmark for selected */}
-                                                        <span className="inline-flex items-center justify-center w-6">
-                                                            {selectedProjects.includes(project.name) && (
-                                                                <CheckIcon
-                                                                    className="w-5 h-5 text-blue-400"
+                                                        }
+                                                        // Enter opens all selected
+                                                        if (e.key === "Enter" && selectedProjects.length > 0) {
+                                                            e.preventDefault();
+                                                            setOpen(false);
+                                                            setQuery("");
+                                                            setTimeout(() => {
+                                                                setOpenedProjects(
+                                                                    Array.from(new Set([...openedProjects, ...selectedProjects]))
+                                                                );
+                                                            }, 0);
+                                                        }
+                                                    }}
+                                                />
+                                                <MagnifyingGlassIcon
+                                                    className="pointer-events-none col-start-1 row-start-1 ml-4 size-5 self-center text-gray-500"
+                                                    aria-hidden="true"
+                                                />
+                                            </div>
+                                            {(unopened.length > 0 || filteredProjects.length > 0) && (
+                                                <ComboboxOptions
+                                                    static
+                                                    as="ul"
+                                                    ref={listRef}
+                                                    className="max-h-80 scroll-py-2 divide-y divide-gray-500/20 overflow-y-auto"
+                                                >
+                                                    <li className="p-2">
+                                                        {query === "" && (
+                                                            <>
+                                                                <h2 className="mt-4 mb-2 px-3 text-xs font-semibold text-gray-200">
+                                                                    Unopened Projects
+                                                                </h2>
+                                                                <ul className="text-sm text-gray-400">
+                                                                    {unopened.map((project, idx) => (
+                                                                        <ComboboxOption
+                                                                            key={project.name}
+                                                                            value={project}
+                                                                            className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
+                                                                            aria-selected={selectedProjects.includes(
+                                                                                project.name
+                                                                            )}
+                                                                            onClick={() => {
+                                                                                // Single click: open project
+                                                                                openProject(project.name);
+                                                                                setOpen(false);
+                                                                                setQuery("");
+                                                                            }}
+                                                                            onKeyDown={(e) => {
+                                                                                // Space toggles selection
+                                                                                if (e.key === " " || e.key === "Spacebar") {
+                                                                                    e.preventDefault();
+                                                                                    setLastActiveIndex(idx);
+                                                                                    setSelectedProjects((prev) =>
+                                                                                        prev.includes(project.name)
+                                                                                            ? prev.filter((n) => n !== project.name)
+                                                                                            : [...prev, project.name]
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {/* Checkmark for selected */}
+                                                                            <span className="inline-flex w-6 items-center justify-center">
+                                                                                {selectedProjects.includes(project.name) && (
+                                                                                    <CheckIcon
+                                                                                        className="h-5 w-5 text-blue-400"
+                                                                                        aria-hidden="true"
+                                                                                    />
+                                                                                )}
+                                                                            </span>
+                                                                            {project.logo ? (
+                                                                                <img
+                                                                                    src={project.logo}
+                                                                                    alt={`${project.name} logo`}
+                                                                                    className="h-6 w-6 size-6 flex-none rounded border border-gray-300 bg-white object-contain"
+                                                                                />
+                                                                            ) : (
+                                                                                <FolderIcon
+                                                                                    className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
+                                                                                    aria-hidden="true"
+                                                                                />
+                                                                            )}
+                                                                            <span className="ml-3 flex-auto truncate">
+                                                                                {project.name}
+                                                                            </span>
+                                                                            <span
+                                                                                className="ml-3 min-w-[110px] text-right text-xs text-gray-400"
+                                                                                title={
+                                                                                    project.lastNote > 0
+                                                                                        ? new Date(project.lastNote).toLocaleString()
+                                                                                        : undefined
+                                                                                }
+                                                                            >
+                                                                                {project.lastNote > 0
+                                                                                    ? `${project.todos.filter((t) => !t.completed).length} - ${new Date(
+                                                                                          project.lastNote
+                                                                                      ).toLocaleDateString(undefined, {
+                                                                                          month: "short",
+                                                                                          day: "numeric",
+                                                                                          year: "2-digit",
+                                                                                          hour: "2-digit",
+                                                                                          minute: "2-digit",
+                                                                                      })}`
+                                                                                    : "No active to-dos"}
+                                                                            </span>
+                                                                            <span className="ml-3 hidden flex-none text-gray-400 group-data-focus:inline">
+                                                                                Jump to...
+                                                                            </span>
+                                                                        </ComboboxOption>
+                                                                    ))}
+                                                                </ul>
+                                                            </>
+                                                        )}
+                                                        {query !== "" && (
+                                                            <ul className="text-sm text-gray-400">
+                                                                {filteredProjects.map((project) => (
+                                                                    <ComboboxOption
+                                                                        key={project.name}
+                                                                        value={project}
+                                                                        className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
+                                                                    >
+                                                                        {project.logo ? (
+                                                                            <img
+                                                                                src={project.logo}
+                                                                                alt={`${project.name} logo`}
+                                                                                className="h-6 w-6 size-6 flex-none rounded border border-gray-300 bg-white object-contain"
+                                                                            />
+                                                                        ) : (
+                                                                            <FolderIcon
+                                                                                className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
+                                                                                aria-hidden="true"
+                                                                            />
+                                                                        )}
+                                                                        <span className="ml-3 flex-auto truncate">
+                                                                            {project.name}
+                                                                        </span>
+                                                                        <span className="ml-3 hidden flex-none text-gray-400 group-data-focus:inline">
+                                                                            Jump to...
+                                                                        </span>
+                                                                    </ComboboxOption>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </li>
+                                                </ComboboxOptions>
+                                            )}
+
+                                            <ComboboxOptions
+                                                static
+                                                as="ul"
+                                                className="max-h-80 scroll-py-2 divide-y divide-gray-500/20 overflow-y-auto"
+                                            >
+                                                <li className="p-2">
+                                                    <ul className="text-sm text-gray-400">
+                                                        {quickActions.map((action) => (
+                                                            <ComboboxOption
+                                                                key={action.name}
+                                                                value={action}
+                                                                className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
+                                                            >
+                                                                <action.icon
+                                                                    className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
                                                                     aria-hidden="true"
                                                                 />
-                                                            )}
-                                                        </span>
-                                                        {project.logo ? (
-                                                            <img
-                                                                src={project.logo}
-                                                                alt={project.name + " logo"}
-                                                                className="size-6 flex-none rounded bg-white object-contain border border-gray-300 w-6 h-6"
-                                                            />
-                                                        ) : (
-                                                            <FolderIcon
-                                                                className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
-                                                                aria-hidden="true"
-                                                            />
-                                                        )}
-                                                        <span className="ml-3 flex-auto truncate">{project.name}</span>
-                                                        <span
-                                                            className="ml-3 text-xs text-gray-400 text-right min-w-[110px]"
-                                                            title={
-                                                                project.lastNote > 0
-                                                                    ? new Date(project.lastNote).toLocaleString()
-                                                                    : undefined
-                                                            }
-                                                        >
-                                                            {project.lastNote > 0
-                                                                ? `${
-                                                                      project.todos.filter((t) => !t.completed).length
-                                                                  } - 
-                                                                ${new Date(project.lastNote).toLocaleDateString(
-                                                                    undefined,
-                                                                    {
-                                                                        month: "short",
-                                                                        day: "numeric",
-                                                                        year: "2-digit",
-                                                                        hour: "2-digit",
-                                                                        minute: "2-digit",
-                                                                    }
-                                                                )}`
-                                                                : "No active to-dos"}
-                                                        </span>
-                                                        <span className="ml-3 hidden flex-none text-gray-400 group-data-focus:inline">
-                                                            Jump to...
-                                                        </span>
-                                                    </ComboboxOption>
-                                                ))}
-                                            </ul>
-                                        </>
-                                    )}
-                                    {query !== "" && (
-                                        <ul className="text-sm text-gray-400">
-                                            {filteredProjects.map((project) => (
-                                                <ComboboxOption
-                                                    key={project.name}
-                                                    value={project}
-                                                    className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
-                                                >
-                                                    {project.logo ? (
-                                                        <img
-                                                            src={project.logo}
-                                                            alt={project.name + " logo"}
-                                                            className="size-6 flex-none rounded bg-white object-contain border border-gray-300 w-6 h-6"
-                                                        />
-                                                    ) : (
-                                                        <FolderIcon
-                                                            className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
-                                                            aria-hidden="true"
-                                                        />
-                                                    )}
-                                                    <span className="ml-3 flex-auto truncate">{project.name}</span>
-                                                    <span className="ml-3 hidden flex-none text-gray-400 group-data-focus:inline">
-                                                        Jump to...
-                                                    </span>
-                                                </ComboboxOption>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </li>
-                            </ComboboxOptions>
-                        )}
-
-                        <ComboboxOptions
-                            static
-                            as="ul"
-                            className="max-h-80 scroll-py-2 divide-y divide-gray-500/20 overflow-y-auto"
-                        >
-                            <li className="p-2">
-                                <ul className="text-sm text-gray-400">
-                                    {quickActions.map((action) => (
-                                        <ComboboxOption
-                                            key={action.name}
-                                            value={action}
-                                            className="group flex cursor-default items-center rounded-md px-3 py-2 select-none data-focus:bg-gray-800 data-focus:text-white data-focus:outline-hidden"
-                                        >
-                                            <action.icon
-                                                className="size-6 flex-none text-gray-500 group-data-focus:text-white forced-colors:group-data-focus:text-[Highlight]"
-                                                aria-hidden="true"
-                                            />
-                                            <span className="ml-3 flex-auto truncate">
-                                                {action.action === "createProject"
-                                                    ? `Create project${query ? ` "${query}"` : ""}`
-                                                    : action.name}
-                                            </span>
-                                        </ComboboxOption>
-                                    ))}
-                                </ul>
-                            </li>
-                        </ComboboxOptions>
-                    </Combobox>
-                </DialogPanel>
+                                                                <span className="ml-3 flex-auto truncate">
+                                                                    {action.action === "createProject"
+                                                                        ? `Create project${query ? ` "${query}"` : ""}`
+                                                                        : action.name}
+                                                                </span>
+                                                            </ComboboxOption>
+                                                        ))}
+                                                    </ul>
+                                                </li>
+                                            </ComboboxOptions>
+                                        </Combobox>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key={view}
+                                        layout
+                                        initial={{ opacity: 0, y: 12 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -12 }}
+                                        transition={{ duration: 0.18, ease: "easeOut" }}
+                                        className="p-4"
+                                    >
+                                        <div className="flex items-center justify-between mb-2">
+                                            <button
+                                                className="text-sm text-gray-400 hover:text-white"
+                                                onClick={() => setView("commands")}
+                                            >
+                                                ← Back
+                                            </button>
+                                        </div>
+                                        <div className="max-h-[70vh] overflow-y-auto">
+                                            {view === "settings" && (
+                                                <SettingsDialog
+                                                    onClose={() => {
+                                                        setOpen(false);
+                                                        setView("commands");
+                                                    }}
+                                                />
+                                            )}
+                                            {view === "help" && (
+                                                <HelpDialog
+                                                    onClose={() => {
+                                                        setOpen(false);
+                                                        setView("commands");
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    </MotionDialogPanel>
+                </LayoutGroup>
             </div>
         </Dialog>
     );

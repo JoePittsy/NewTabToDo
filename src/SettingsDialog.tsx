@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import RestoreDialog from "@/cloud/RestoreDialog";
 import { useDialog } from "@/useDialog";
 import DialogHeader from "@/DialogHeader";
+import { Settings} from "@/Interfaces";
 
 interface SettingsDialogProps {
     onClose: () => void;
@@ -13,16 +14,9 @@ interface SettingsDialogProps {
 const tabList = [
     { key: "general", label: "General" },
     { key: "advanced", label: "Advanced" },
+    { key: "background", label: "Background" }
 ];
 
-interface GeneralSettings {
-    useFirefoxContainers: boolean;
-    showFireworks?: boolean;
-}
-
-export interface Settings {
-    General: GeneralSettings;
-}
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<string>("general");
@@ -152,7 +146,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     if (!draft) return <></>;
 
     return (
-        <div className="w-[480px] min-h-[336px]  rounded-xl text-zinc-100 relative">
+        <div className="  rounded-xl text-zinc-100 relative">
             <DialogHeader
                 title="Settings"
                 tabs={tabList}
@@ -164,7 +158,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             <div className="min-h-[180px] mb-6">
                 {activeTab === "general" && (
                     <div>
-                        <h3 className="text-indigo-200 font-semibold text-base">General Settings</h3>
+                        <h3 className="text-white font-semibold text-base">General Settings</h3>
                         <label className="flex items-center gap-2.5 mt-5 mb-3 text-base text-zinc-100">
                             <input
                                 type="checkbox"
@@ -179,17 +173,17 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                             : s
                                     )
                                 }
-                                className="w-[18px] h-[18px] accent-sky-300"
+                                className="w-[18px] h-[18px] accent-white"
                                 aria-label="Use Firefox Containers"
                             />
                             Use Firefox Containers
                         </label>
-                        <div className="text-indigo-200 text-sm ml-7 mb-2">
+                        <div className="text-gray-400 ml-7 mb-2">
                             When enabled, links will open in a container named after the project. Firefox and the{" "}
                             <a href="https://addons.mozilla.org/en-US/firefox/addon/open-url-in-container/">
                                 Open external links in a container
                             </a>{" "}
-                            exstention are required.
+                            extension are required.
                         </div>
                         <label className="flex items-center gap-2.5 my-3 text-base text-zinc-100">
                             <input
@@ -208,7 +202,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                             : s
                                     )
                                 }
-                                className="w-[18px] h-[18px] accent-sky-300"
+                                className="w-[18px] h-[18px] accent-white"
                                 aria-label="Show fireworks when completing to-dos"
                             />
                             Show fireworks when completing to-dos
@@ -218,19 +212,19 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
                 {activeTab === "advanced" && (
                     <div>
-                        <h3 className="text-indigo-200 font-semibold text-lg">Advanced</h3>
-                        <p className="text-indigo-200">
+                        <h3 className="text-white font-semibold text-lg">Advanced</h3>
+                        <p className="text-gray-400">
                             Export or import your entire configuration (projects and settings).
                         </p>
                         <div className="flex gap-4 my-4">
                             <button
                                 type="button"
                                 onClick={handleExport}
-                                className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
+                                className="bg-zinc-600 text-white border border-white font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                             >
                                 Export
                             </button>
-                            <label className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer py-2 px-5 rounded-md">
+                            <label className="bg-zinc-600 text-white border border-white font-semibold text-base cursor-pointer py-2 px-5 rounded-md">
                                 Import
                                 <input
                                     type="file"
@@ -245,15 +239,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
                 {activeTab === "advanced" && (
                     <div className="mt-6">
-                        <h3 className="text-indigo-200 font-semibold text-lg">Cloud Backup (Dropbox)</h3>
-                        <p className="text-indigo-200">Manage cloud backups by connecting your account.</p>
+                        <h3 className="text-white font-semibold text-lg">Cloud Backup (Dropbox)</h3>
+                        <p className="text-gray-400">Manage cloud backups by connecting your account.</p>
                         {providers.map((p) => (
                             <div key={p.key} className="flex gap-4 my-4">
                                 {!providerConnections[p.key] && (
                                     <button
                                         type="button"
                                         onClick={() => handleProviderConnect(p.key, p.service)}
-                                        className="bg-zinc-900 text-sky-300 border border-sky-300 font-semibold text-base cursor-pointer px-5 py-2 rounded-md"
+                                        className="bg-zinc-600 text-white border border-white font-semibold text-base cursor-pointer px-5 py-2 rounded-md"
                                     >
                                         Connect to {p.name}
                                     </button>
@@ -288,12 +282,53 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                         ))}
                     </div>
                 )}
+
+                {activeTab === "background" && (
+                    <div>
+                        <h3 className="text-white font-semibold text-lg">Background Settings</h3>
+                        <label
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                margin: "1.2em 0 0.7em 0",
+                                fontSize: "1.05em",
+                                color: "#f3f6fa",
+                            }}
+                        >
+                            <input className="w-[18px] h-[18px] accent-white"
+                                type="checkbox"
+                                checked={draft.Background?.useSpinningBackground}
+                                onChange={(e) =>
+                                    setDraft((s) =>
+                                        s ? {
+                                                ...s,
+                                                Background: {
+                                                    ...s.Background,
+                                                    useSpinningBackground: e.target.checked,
+                                                },
+                                            } : s
+                                    )
+                                }
+                                aria-label="Use Spinning Background"
+                            />
+                            Use Spinning Background
+                        </label>
+                        <p className="text-gray-400 ml-7">
+                            When enabled, a colorful spinning background will be displayed.
+                        </p>
+                        
+                        {/* If spinning background is enabled, we should allow background colors settings */}
+
+                    </div>
+                )}
             </div>
+
             <div className="flex gap-4 justify-end mt-auto">
                 <button
                     type="button"
                     onClick={onSave}
-                    className="bg-transparent text-sky-300 border-none font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
+                    className="bg-zinc-600 text-white border-none font-semibold text-base cursor-pointer py-2 px-5 rounded-md"
                 >
                     Save Settings
                 </button>

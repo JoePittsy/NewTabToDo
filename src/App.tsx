@@ -1,13 +1,15 @@
 import { ProjectsProvider, useProjects, Project, isProjectEffectivelyPinned } from "./ProjectsProvider";
 import EditProjectDialog from "./Edit Project/EditProjectDialog";
 import { DialogProvider } from "./DialogProvider";
-import { SettingsProvider } from "./SettingsProvider";
+import { SettingsProvider, useSettings } from "./SettingsProvider";
 import { Bars4Icon } from "@heroicons/react/24/outline";
 import FireworkEffect from "./FireworkEffect";
 import CommandPalette, { Action } from "./CommandPalette";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ProjectCard from "./components/ProjectCard/ProjectCard";
 import "./App.css";
+import { PsychedelicSpiral } from './components/ui/shadcn-io/psychedelic-spiral';
+
 import {
     DndContext as ProjectDndContext,
     closestCenter as projectClosestCenter,
@@ -148,8 +150,31 @@ function App() {
         setDropTargetId((over?.id as string) ?? null);
     }
 
+    const settings = useSettings();
+
+    const spiral = useMemo(() => {
+
+        if (settings && settings.Background?.useSpinningBackground) {
+            return (
+                <PsychedelicSpiral
+
+                    color1="#871d87"
+                    color2="#b2dfdf"
+                    color3="#0c204e"
+                    pixelFilter={1200}
+                    lighting={0.2}
+                    // isRotate={true}
+                    className="fixed inset-0 -z-10"
+                />
+            );
+        }
+        return null;
+        // Reload this component whenever the background settings changes
+    }, [settings?.Background?.useSpinningBackground]);
+
     return (
         <>
+            {spiral}
             {fireworks.map((id) => (
                 <FireworkEffect
                     key={id}
